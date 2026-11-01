@@ -1,1 +1,23 @@
-{"build":{"appId":"com.sidedock.app","productName":"Side Dock","win":{"icon":"build/icon.ico","target":"portable"}},"description":"Side Dock - premium edge sidebar for Windows, dark navy style, icons-only and icons+names modes","devDependencies":{"electron":"^33.0.0","electron-builder":"^25.0.0"},"main":"main.js","name":"side-dock","private":true,"scripts":{"pack":"electron-builder --win portable","start":"electron ."},"version":"1.1.0"}
+{
+  "build": {
+    "appId": "com.sidedock.app",
+    "productName": "Side Dock",
+    "win": {
+      "icon": "build/icon.ico",
+      "target": "portable"
+    }
+  },
+  "description": "Side Dock - premium edge sidebar for Windows, dark navy style, icons-only and icons+names modes",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "main": "main.js",
+  "name": "side-dock",
+  "private": true,
+  "scripts": {
+    "pack": "electron-builder --win portable",
+    "start": "electron ."
+  },
+  "version": "1.2.0"
+}

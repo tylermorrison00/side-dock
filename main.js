@@ -1,7 +1,43 @@
 const { app, BrowserWindow, ipcMain, shell, screen } = require('electron');
 const { exec } = require('child_process');
 const fs = require('fs');
+const https = require('https');
+const os = require('os');
 const path = require('path');
+
+// One-click update: sidebar ke Update button se. Kaam is tarah:
+// 1) repo ki package.json se naya version check karo
+// 2) naya ho to repo ka main zip download karo, extract karo, app folder me copy karo
+// 3) npm install dobara chalao (agar nayi library aayi ho to wo bhi aa jaye)
+// 4) app restart karo. Zip download ya install dobara user ko nahi karna.
+// NOTE: ye download sirf tab kaam karega jab repo public ho, kyunki private
+// repo ki files bina login ke download nahi hoti. Private repo par button
+// seedha error dikhayega, app kharab nahi hogi.
+const UPDATE_RAW = 'https://raw.githubusercontent.com/tylermorrison00/side-dock/main/package.json';
+const UPDATE_ZIP = 'https://github.com/tylermorrison00/side-dock/archive/refs/heads/main.zip';
+
+function fetchText(url, hops = 0) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'SideDock-Updater' } }, (res) => {
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && hops < 5) {
+        res.resume();
+        fetchText(res.headers.location, hops + 1).then(resolve, reject);
+        return;
+      }
+      if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+      let data = '';
+      res.on('data', (c) => { data += c; });
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+function runCmd(cmd, cwd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, { cwd, windowsHide: true, timeout: 600000 }, (err, stdout, stderr) => {
+      if (err) reject(new Error(stderr || err.message)); else resolve(stdout);
+    });
+  });
+}
 
 let win = null;
 let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
@@ -110,3 +146,47 @@ ipcMain.handle('launch-tool', (_e, tool) => {
 });
 ipcMain.handle('window-min', () => win && win.minimize());
 ipcMain.handle('window-close', () => win && win.close());
+ipcMain.handle('do-update', async () => {
+  if (process.platform !== 'win32') return { ok: false, message: 'Update sirf Windows version par hai.' };
+  try {
+    let localVersion = '';
+    try { localVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version || ''; } catch {}
+    const remote = JSON.parse(await fetchText(UPDATE_RAW));
+    if (remote.version && remote.version === localVersion) {
+      return { ok: true, updated: false, version: localVersion, message: 'App pehle se latest hai.' };
+    }
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sidedock-update-'));
+    const zipPath = path.join(tmpDir, 'update.zip');
+    const extractDir = path.join(tmpDir, 'extracted');
+    await new Promise((resolve, reject) => {
+      const file = fs.createWriteStream(zipPath);
+      https.get(UPDATE_ZIP, { headers: { 'User-Agent': 'SideDock-Updater' } }, (res) => {
+        if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
+          https.get(res.headers.location, (r2) => { r2.pipe(file); file.on('finish', () => { file.close(); resolve(); }); }).on('error', reject);
+          return;
+        }
+        if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
+        res.pipe(file); file.on('finish', () => { file.close(); resolve(); });
+      }).on('error', reject);
+    });
+    await runCmd(`powershell -NoProfile -Command "Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${extractDir}'"`, tmpDir);
+    const srcDir = path.join(extractDir, 'side-dock-main');
+    if (!fs.existsSync(path.join(srcDir, 'package.json'))) throw new Error('Update zip me app files nahi mili.');
+    // node_modules, .git aur dist ko chhero mat — baqi sab nayi files se replace karo.
+    for (const entry of fs.readdirSync(srcDir)) {
+      if (['node_modules', '.git', 'dist'].includes(entry)) continue;
+      fs.cpSync(path.join(srcDir, entry), path.join(__dirname, entry), { recursive: true, force: true });
+    }
+    try { await runCmd('npm install --no-audit --no-fund', __dirname); } catch (e) { console.error('npm install after update:', e.message); }
+    try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    const newVersion = remote.version || '';
+    setTimeout(() => { app.relaunch(); app.quit(); }, 500);
+    return { ok: true, updated: true, version: newVersion, message: 'Update ho gaya, app restart ho rahi hai.' };
+  } catch (e) {
+    const msg = String(e.message || e);
+    if (msg.includes('404') || msg.includes('403')) {
+      return { ok: false, message: 'Update download nahi ho saka — repo abhi private hai. Repo public hone par ye button kaam karega.' };
+    }
+    return { ok: false, message: 'Update nahi ho saka: ' + msg };
+  }
+});

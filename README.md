@@ -33,6 +33,17 @@ npm run pack
 The portable file appears in `dist/`. Node.js is the only requirement, and it
 is free.
 
+## One-click update (v1.2)
+
+Sidebar me **Update** button dabao, bas. App khud naya version check karegi,
+agar naya ho to nayi files download karke replace karegi, `npm install`
+khud chalegi, phir app restart ho jayegi. Zip download ya install dobara
+user ko nahi karna.
+
+Zaroori shart: ye download sirf tab kaam karega jab repo public ho, kyunki
+private repo ki files bina login ke download nahi hoti. Private repo par
+Update button seedha ye error dikhayega, app kharab nahi hogi.
+
 ## Logo + auto-start (v1.1)
 
 - Logo: `assets/icon.png` (cyan bolt on dark navy) and `build/icon.ico` for
