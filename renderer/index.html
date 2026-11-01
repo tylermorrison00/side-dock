@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Side Dock</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #070d1f; --panel: #0b152e; --panel2: #101e3d; --line: #1b2a4d;
+    --text: #e8edf7; --muted: #8b96ad; --green: #2fe07a; --cyan: #38cfff;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Inter, Segoe UI, system-ui, sans-serif;
+    overflow: hidden; user-select: none;
+  }
+  .dock { height: 100vh; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px;
+    background: linear-gradient(135deg, #0f2a4a, #0b152e); border: 1px solid var(--line);
+    display: grid; place-items: center; font-size: 22px; color: var(--cyan);
+  }
+  .brand-name { font-weight: 800; font-size: 18px; white-space: nowrap; }
+  .brand-sub { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .winbtns { display: flex; gap: 6px; -webkit-app-region: no-drag; }
+  .winbtns button {
+    width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--muted); cursor: pointer; font-size: 14px;
+  }
+  .winbtns button:hover { color: var(--text); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+    padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+  }
+  .section { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 2px; }
+  .tool {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent; border-radius: 14px;
+    color: var(--text); padding: 9px 10px; cursor: pointer; position: relative;
+  }
+  .tool:hover { background: var(--panel2); border-color: var(--line); }
+  .tool.active { background: var(--panel2); border-color: #1e7d4d; }
+  .tool .icon {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px; display: grid; place-items: center;
+    background: #0d1b38; border: 1px solid var(--line); font-size: 20px;
+  }
+  .tool .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .tool .del { display: none; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .tool:hover .del { display: block; }
+  .empty { color: var(--muted); font-size: 13px; line-height: 1.6; padding: 10px 8px; }
+  /* Collapsed: icons only. Names hidden, tooltip appears on the left. */
+  body.collapsed .brand-name, body.collapsed .brand-sub, body.collapsed .section,
+  body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
+  body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
+  body.collapsed .dock { padding: 14px 8px; align-items: center; }
+  body.collapsed .panel { width: 60px; padding: 8px 6px; align-items: center; }
+  body.collapsed .tool { padding: 6px; justify-content: center; }
+  body.collapsed .tool:hover::after {
+    content: attr(data-name); position: fixed; right: 78px; z-index: 50;
+    background: #16264d; border: 1px solid var(--line); color: var(--text);
+    padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  .footer { display: flex; flex-direction: column; gap: 8px; }
+  .btn {
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px;
+    border-radius: 14px; border: 1px solid var(--line); background: var(--panel);
+    color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .btn.primary { background: #12351f; border-color: #1e7d4d; color: #b9f5d3; }
+  .btn span.ic { font-size: 17px; }
+  body.collapsed .btn { justify-content: center; padding: 11px 6px; }
+  .form { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; gap: 8px; flex-direction: column; }
+  .form.open { display: flex; }
+  .form input, .form select {
+    width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #0d1b38; color: var(--text); outline: none; font-size: 13px;
+  }
+  .form label { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="dock">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">⚡</div>
+      <div><div class="brand-name">Side Dock</div><div class="brand-sub">Premium dock</div></div>
+    </div>
+    <div class="winbtns">
+      <button id="minBtn" title="Minimize">–</button>
+      <button id="closeBtn" title="Close">✕</button>
+    </div>
+  </div>
+
+  <div class="panel" id="toolList">
+    <div class="section">Tools</div>
+    <div class="empty" id="emptyState">Abhi koi tool add nahi hai. Neeche + Add tool se add karo, ya tool ka naam batao, main add kar dunga.</div>
+  </div>
+
+  <div class="form" id="addForm">
+    <label>Tool ka naam</label><input id="fName" placeholder="Jese: Notion">
+    <label>Icon (emoji ya harf)</label><input id="fIcon" placeholder="Jese: 📝" maxlength="4">
+    <label>Qisam</label>
+    <select id="fKind"><option value="url">Website / link</option><option value="app">Laptop app / command</option></select>
+    <label>Link ya app ka rasta / command</label><input id="fTarget" placeholder="https://... ya C:\... ya app ka naam">
+    <button class="btn primary" id="saveTool"><span class="ic">✓</span><span>Save tool</span></button>
+  </div>
+
+  <div class="footer">
+    <button class="btn" id="addBtn"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
+    <button class="btn" id="collapseBtn"><span class="ic">◀</span><span class="collapse-label">Collapse Sidebar</span></button>
+  </div>
+</div>
+
+<script>
+  let mode = 'expanded';
+  let tools = [];
+  const list = document.getElementById('toolList');
+  const emptyState = document.getElementById('emptyState');
+
+  function render() {
+    document.body.classList.toggle('collapsed', mode === 'collapsed');
+    document.querySelector('#collapseBtn .ic').textContent = mode === 'collapsed' ? '▶' : '◀';
+    document.querySelector('#collapseBtn .collapse-label').textContent = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
+    list.querySelectorAll('.tool').forEach(el => el.remove());
+    emptyState.style.display = tools.length ? 'none' : 'block';
+    tools.forEach(tool => {
+      const b = document.createElement('button');
+      b.className = 'tool'; b.dataset.name = tool.name;
+      b.innerHTML = `<span class="icon">${tool.icon || '◆'}</span><span class="name">${tool.name}</span><span class="del" title="Remove">✕</span>`;
+      b.addEventListener('click', (e) => {
+        if (e.target.classList.contains('del')) return;
+        window.sideDock.launchTool(tool);
+      });
+      b.querySelector('.del').addEventListener('click', async () => {
+        tools = await window.sideDock.removeTool(tool.id); render();
+      });
+      list.appendChild(b);
+    });
+  }
+
+  document.getElementById('collapseBtn').addEventListener('click', async () => {
+    mode = await window.sideDock.setMode(mode === 'collapsed' ? 'expanded' : 'collapsed');
+    render();
+  });
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('addForm').classList.toggle('open');
+  });
+  document.getElementById('saveTool').addEventListener('click', async () => {
+    const name = document.getElementById('fName').value.trim();
+    const target = document.getElementById('fTarget').value.trim();
+    if (!name || !target) return;
+    tools = await window.sideDock.addTool({
+      name, target,
+      icon: document.getElementById('fIcon').value.trim() || '◆',
+      kind: document.getElementById('fKind').value
+    });
+    document.getElementById('addForm').classList.remove('open');
+    document.getElementById('fName').value = ''; document.getElementById('fTarget').value = ''; document.getElementById('fIcon').value = '';
+    render();
+  });
+  document.getElementById('minBtn').addEventListener('click', () => window.sideDock.minimize());
+  document.getElementById('closeBtn').addEventListener('click', () => window.sideDock.close());
+
+  window.sideDock.getState().then(state => { mode = state.mode; tools = state.tools || []; render(); });
+</script>
+</body>
+</html>
