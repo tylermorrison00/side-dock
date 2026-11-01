@@ -55,7 +55,7 @@
   /* Collapsed: icons only. Names hidden, tooltip appears on the left. */
   body.collapsed .brand-name, body.collapsed .brand-sub, body.collapsed .section,
   body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
-  body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
+  body.collapsed .winbtns, body.collapsed .add-label, body.collapsed .auto-label { display: none !important; }
   body.collapsed .dock { padding: 14px 8px; align-items: center; }
   body.collapsed .panel { width: 60px; padding: 8px 6px; align-items: center; }
   body.collapsed .tool { padding: 6px; justify-content: center; }
@@ -112,12 +112,14 @@
 
   <div class="footer">
     <button class="btn" id="addBtn"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
+    <button class="btn" id="autoBtn"><span class="ic">⏻</span><span class="auto-label">Auto-start: On</span></button>
     <button class="btn" id="collapseBtn"><span class="ic">◀</span><span class="collapse-label">Collapse Sidebar</span></button>
   </div>
 </div>
 
 <script>
   let mode = 'expanded';
+  let autoStart = true;
   let tools = [];
   const list = document.getElementById('toolList');
   const emptyState = document.getElementById('emptyState');
@@ -143,6 +145,10 @@
     });
   }
 
+  document.getElementById('autoBtn').addEventListener('click', async () => {
+    autoStart = await window.sideDock.setAutostart(!autoStart);
+    document.querySelector('#autoBtn .auto-label').textContent = autoStart ? 'Auto-start: On' : 'Auto-start: Off';
+  });
   document.getElementById('collapseBtn').addEventListener('click', async () => {
     mode = await window.sideDock.setMode(mode === 'collapsed' ? 'expanded' : 'collapsed');
     render();
@@ -166,7 +172,7 @@
   document.getElementById('minBtn').addEventListener('click', () => window.sideDock.minimize());
   document.getElementById('closeBtn').addEventListener('click', () => window.sideDock.close());
 
-  window.sideDock.getState().then(state => { mode = state.mode; tools = state.tools || []; render(); });
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.querySelector('#autoBtn .auto-label').textContent = autoStart ? 'Auto-start: On' : 'Auto-start: Off'; render(); });
 </script>
 </body>
 </html>

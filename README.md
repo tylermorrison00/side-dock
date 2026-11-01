@@ -33,6 +33,18 @@ npm run pack
 The portable file appears in `dist/`. Node.js is the only requirement, and it
 is free.
 
+## Logo + auto-start (v1.1)
+
+- Logo: `assets/icon.png` (cyan bolt on dark navy) and `build/icon.ico` for
+  Windows. The packaged exe and its desktop shortcut use this logo, not the
+  default Electron icon.
+- Auto-start: ON by default. Laptop on / Windows login par Side Dock khud
+  khul kar right edge par aa jata hai. App ke andar **Auto-start** button se
+  On/Off kar sakte ho.
+- Manual tareeqa (agar kabhi zaroorat pare): Windows me `Win + R`, likho
+  `shell:startup`, Enter, aur us folder me Side Dock exe ka shortcut paste
+  kar do. Desktop shortcut: exe par right-click > Send to > Desktop.
+
 ## Files
 
 - `main.js` — window docking, always-on-top, mode + tools storage

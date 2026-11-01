@@ -5,6 +5,7 @@ const path = require('path');
 
 let win = null;
 let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
+let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let settingsPath = '';
 let toolsPath = '';
 
@@ -17,11 +18,12 @@ function loadSettings() {
     const raw = fs.readFileSync(settingsPath, 'utf8');
     const data = JSON.parse(raw);
     if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
+    if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
   } catch {}
 }
 
 function saveSettings() {
-  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode }, null, 2)); } catch {}
+  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode, autoStart }, null, 2)); } catch {}
 }
 
 function loadTools() {
@@ -51,9 +53,12 @@ function createWindow() {
   loadSettings();
   const area = screen.getPrimaryDisplay().workArea;
   const { width } = windowSize();
+  // Windows login par auto-start: laptop on hote hi app khud chalega.
+  try { app.setLoginItemSettings({ openAtLogin: autoStart }); } catch {}
   win = new BrowserWindow({
     width,
     height: area.height,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
     x: area.x + area.width - width,
     y: area.y,
     frame: false,
@@ -72,7 +77,13 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, tools: loadTools() }));
+ipcMain.handle('set-autostart', (_e, next) => {
+  autoStart = !!next;
+  saveSettings();
+  try { app.setLoginItemSettings({ openAtLogin: autoStart }); } catch {}
+  return autoStart;
+});
 ipcMain.handle('set-mode', (_e, next) => {
   mode = next === 'collapsed' ? 'collapsed' : 'expanded';
   saveSettings();
