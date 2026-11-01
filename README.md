@@ -33,7 +33,11 @@ npm run pack
 The portable file appears in `dist/`. Node.js is the only requirement, and it
 is free.
 
-## Private repo update with GitHub token (v1.3, repo private hi rahega)
+## Update (repo ab public hai — token ki zaroorat nahi)
+
+Sidebar me **Update** button dabao, bas. Repo public hone ki wajah se app bina token ke naya version download kar legi. Token wala tareeqa ab zaroori nahi hai, is liye token laptop me save mat karo.
+
+## Private repo update with GitHub token (v1.3, purana tareeqa — ab zaroori nahi)
 
 Sidebar me **GitHub token** dabao, token paste karke Save karo, phir
 **Update** dabao. Token ek dafa hi dalna hai.
