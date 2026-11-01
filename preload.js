@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('sideDock', {
   setMode: (mode) => ipcRenderer.invoke('set-mode', mode),
   setAutostart: (on) => ipcRenderer.invoke('set-autostart', on),
   doUpdate: () => ipcRenderer.invoke('do-update'),
+  setGithubToken: (token) => ipcRenderer.invoke('set-github-token', token),
+  clearGithubToken: () => ipcRenderer.invoke('clear-github-token'),
   addTool: (tool) => ipcRenderer.invoke('add-tool', tool),
   removeTool: (id) => ipcRenderer.invoke('remove-tool', id),
   launchTool: (tool) => ipcRenderer.invoke('launch-tool', tool),

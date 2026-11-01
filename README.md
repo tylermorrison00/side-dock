@@ -33,6 +33,22 @@ npm run pack
 The portable file appears in `dist/`. Node.js is the only requirement, and it
 is free.
 
+## Private repo update with GitHub token (v1.3, repo private hi rahega)
+
+Sidebar me **GitHub token** dabao, token paste karke Save karo, phir
+**Update** dabao. Token ek dafa hi dalna hai.
+
+Token banane ka tareeqa (GitHub, free): GitHub kholo > apni photo par click >
+Settings > Developer settings (neeche) > Personal access tokens >
+Fine-grained tokens > Generate new token. Token ka naam Side Dock rakho,
+sirf side-dock repo select karo, Contents me Read-only do, Generate karo.
+Jo token dikhe use foran copy kar lo, wo dobara nahi dikhega.
+
+Token sirf tumhare laptop par Windows ke encryption se save hota hai, repo
+me nahi jata, kisi aur ko nahi bheja jata. Token sirf read-only ho to leak
+hone par bhi sirf ye repo parha ja sakta hai, change nahi. Kabhi bhi GitHub
+se token revoke kar sakte ho, aur app me Token hatao se bhi hata sakte ho.
+
 ## One-click update (v1.2)
 
 Sidebar me **Update** button dabao, bas. App khud naya version check karegi,
@@ -40,9 +56,10 @@ agar naya ho to nayi files download karke replace karegi, `npm install`
 khud chalegi, phir app restart ho jayegi. Zip download ya install dobara
 user ko nahi karna.
 
-Zaroori shart: ye download sirf tab kaam karega jab repo public ho, kyunki
-private repo ki files bina login ke download nahi hoti. Private repo par
-Update button seedha ye error dikhayega, app kharab nahi hogi.
+Zaroori shart (v1.2 wali): bina token ke ye download sirf tab kaam karega
+jab repo public ho, kyunki private repo ki files bina login ke download
+nahi hoti. V1.3 se token wala tareeqa hai, is liye repo private rehte hue
+bhi Update kaam karega.
 
 ## Logo + auto-start (v1.1)
 

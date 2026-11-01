@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, safeStorage } = require('electron');
 const { exec } = require('child_process');
 const fs = require('fs');
 const https = require('https');
@@ -10,24 +10,66 @@ const path = require('path');
 // 2) naya ho to repo ka main zip download karo, extract karo, app folder me copy karo
 // 3) npm install dobara chalao (agar nayi library aayi ho to wo bhi aa jaye)
 // 4) app restart karo. Zip download ya install dobara user ko nahi karna.
-// NOTE: ye download sirf tab kaam karega jab repo public ho, kyunki private
-// repo ki files bina login ke download nahi hoti. Private repo par button
-// seedha error dikhayega, app kharab nahi hogi.
+// Private repo update ka tareeqa: GitHub token (login ka hi ek tareeqa).
+// Token sirf user ke laptop par, Windows ke apne encryption (DPAPI) se save
+// hota hai — repo me NAHI jata, Muse ko NAHI bheja jata, sirf GitHub API ko
+// update download karte waqt bheja jata hai. Token read-only rakho, sirf
+// side-dock repo ke liye, taake leak hone par bhi sirf ye repo parha ja sake.
+// Token na ho aur repo private ho to Update button seedha yehi batayega.
 const UPDATE_RAW = 'https://raw.githubusercontent.com/tylermorrison00/side-dock/main/package.json';
-const UPDATE_ZIP = 'https://github.com/tylermorrison00/side-dock/archive/refs/heads/main.zip';
+const UPDATE_ZIP_API = 'https://api.github.com/repos/tylermorrison00/side-dock/zipball/main';
+let tokenPath = '';
 
-function fetchText(url, hops = 0) {
+function isGithubHost(hostname) {
+  return hostname === 'github.com' || hostname === 'api.github.com' ||
+    hostname.endsWith('.github.com') || hostname.endsWith('.githubusercontent.com');
+}
+function authHeaders(url, token) {
+  const headers = { 'User-Agent': 'SideDock-Updater', 'Accept': 'application/vnd.github+json' };
+  try { if (token && isGithubHost(new URL(url).hostname)) headers.Authorization = 'Bearer ' + token; } catch {}
+  return headers;
+}
+function loadToken() {
+  try {
+    const raw = fs.readFileSync(tokenPath, 'utf8').trim();
+    if (!raw) return '';
+    if (safeStorage.isEncryptionAvailable()) return safeStorage.decryptString(Buffer.from(raw, 'base64'));
+    return raw;
+  } catch { return ''; }
+}
+function saveToken(token) {
+  const value = safeStorage.isEncryptionAvailable()
+    ? safeStorage.encryptString(token).toString('base64') : token;
+  fs.writeFileSync(tokenPath, value, { mode: 0o600 });
+}
+function fetchText(url, token, hops = 0) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'SideDock-Updater' } }, (res) => {
+    https.get(url, { headers: authHeaders(url, token) }, (res) => {
       if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && hops < 5) {
         res.resume();
-        fetchText(res.headers.location, hops + 1).then(resolve, reject);
+        fetchText(res.headers.location, token, hops + 1).then(resolve, reject);
         return;
       }
       if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
       let data = '';
       res.on('data', (c) => { data += c; });
       res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+function downloadFile(url, dest, token, hops = 0) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: authHeaders(url, token) }, (res) => {
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && hops < 5) {
+        res.resume();
+        downloadFile(res.headers.location, dest, token, hops + 1).then(resolve, reject);
+        return;
+      }
+      if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+      const file = fs.createWriteStream(dest);
+      res.pipe(file);
+      file.on('finish', () => { file.close(); resolve(); });
+      file.on('error', reject);
     }).on('error', reject);
   });
 }
@@ -86,6 +128,7 @@ function dockWindow() {
 function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   toolsPath = path.join(app.getPath('userData'), 'tools.json');
+  tokenPath = path.join(app.getPath('userData'), 'github-token.enc');
   loadSettings();
   const area = screen.getPrimaryDisplay().workArea;
   const { width } = windowSize();
@@ -113,7 +156,17 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, autoStart, tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('set-github-token', (_e, token) => {
+  const value = String(token || '').trim();
+  if (!value) return false;
+  saveToken(value);
+  return true;
+});
+ipcMain.handle('clear-github-token', () => {
+  try { fs.unlinkSync(tokenPath); } catch {}
+  return true;
+});
 ipcMain.handle('set-autostart', (_e, next) => {
   autoStart = !!next;
   saveSettings();
@@ -151,24 +204,15 @@ ipcMain.handle('do-update', async () => {
   try {
     let localVersion = '';
     try { localVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version || ''; } catch {}
-    const remote = JSON.parse(await fetchText(UPDATE_RAW));
+    const token = loadToken();
+    const remote = JSON.parse(await fetchText(UPDATE_RAW, token));
     if (remote.version && remote.version === localVersion) {
       return { ok: true, updated: false, version: localVersion, message: 'App pehle se latest hai.' };
     }
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sidedock-update-'));
     const zipPath = path.join(tmpDir, 'update.zip');
     const extractDir = path.join(tmpDir, 'extracted');
-    await new Promise((resolve, reject) => {
-      const file = fs.createWriteStream(zipPath);
-      https.get(UPDATE_ZIP, { headers: { 'User-Agent': 'SideDock-Updater' } }, (res) => {
-        if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
-          https.get(res.headers.location, (r2) => { r2.pipe(file); file.on('finish', () => { file.close(); resolve(); }); }).on('error', reject);
-          return;
-        }
-        if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
-        res.pipe(file); file.on('finish', () => { file.close(); resolve(); });
-      }).on('error', reject);
-    });
+    await downloadFile(UPDATE_ZIP_API, zipPath, token);
     await runCmd(`powershell -NoProfile -Command "Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${extractDir}'"`, tmpDir);
     const srcDir = path.join(extractDir, 'side-dock-main');
     if (!fs.existsSync(path.join(srcDir, 'package.json'))) throw new Error('Update zip me app files nahi mili.');
@@ -184,8 +228,11 @@ ipcMain.handle('do-update', async () => {
     return { ok: true, updated: true, version: newVersion, message: 'Update ho gaya, app restart ho rahi hai.' };
   } catch (e) {
     const msg = String(e.message || e);
-    if (msg.includes('404') || msg.includes('403')) {
-      return { ok: false, message: 'Update download nahi ho saka — repo abhi private hai. Repo public hone par ye button kaam karega.' };
+    if (msg.includes('401') || msg.includes('403') || msg.includes('404')) {
+      if (!loadToken()) {
+        return { ok: false, message: 'Private repo update ke liye GitHub token chahiye — neeche GitHub token me token paste karke Save karo, phir Update dabao.' };
+      }
+      return { ok: false, message: 'Token ghalat ya expire ho gaya, ya is repo par access nahi — naya read-only token banao aur dobara save karo.' };
     }
     return { ok: false, message: 'Update nahi ho saka: ' + msg };
   }

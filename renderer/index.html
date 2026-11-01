@@ -82,7 +82,8 @@
   }
   .form label { font-size: 11px; color: var(--muted); }
   .update-status { font-size: 12px; color: var(--muted); line-height: 1.5; padding: 0 4px; min-height: 18px; }
-  body.collapsed .update-status, body.collapsed .update-label { display: none !important; }
+  body.collapsed .update-status, body.collapsed .update-label, body.collapsed .token-label { display: none !important; }
+  body.collapsed .form { display: none !important; }
 </style>
 </head>
 <body>
@@ -103,6 +104,13 @@
     <div class="empty" id="emptyState">Abhi koi tool add nahi hai. Neeche + Add tool se add karo, ya tool ka naam batao, main add kar dunga.</div>
   </div>
 
+  <div class="form" id="tokenForm">
+    <label>GitHub token (sirf private repo update ke liye, ek dafa)</label><input id="fToken" type="password" placeholder="ghp_... ya github_pat_...">
+    <div class="update-status" id="tokenStatus"></div>
+    <button class="btn primary" id="saveToken"><span class="ic">✓</span><span>Save token</span></button>
+    <button class="btn" id="clearToken"><span class="ic">✕</span><span>Token hatao</span></button>
+  </div>
+
   <div class="form" id="addForm">
     <label>Tool ka naam</label><input id="fName" placeholder="Jese: Notion">
     <label>Icon (emoji ya harf)</label><input id="fIcon" placeholder="Jese: 📝" maxlength="4">
@@ -114,6 +122,7 @@
 
   <div class="footer">
     <button class="btn" id="addBtn"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
+    <button class="btn" id="tokenBtn"><span class="ic">🔑</span><span class="token-label">GitHub token</span></button>
     <button class="btn" id="autoBtn"><span class="ic">⏻</span><span class="auto-label">Auto-start: On</span></button>
     <button class="btn primary" id="updateBtn"><span class="ic">⟳</span><span class="update-label">Update</span></button>
     <div class="update-status" id="updateStatus"></div>
@@ -153,6 +162,21 @@
     autoStart = await window.sideDock.setAutostart(!autoStart);
     document.querySelector('#autoBtn .auto-label').textContent = autoStart ? 'Auto-start: On' : 'Auto-start: Off';
   });
+  document.getElementById('tokenBtn').addEventListener('click', () => {
+    document.getElementById('tokenForm').classList.toggle('open');
+    document.getElementById('tokenStatus').textContent = '';
+  });
+  document.getElementById('saveToken').addEventListener('click', async () => {
+    const value = document.getElementById('fToken').value.trim();
+    if (!value) return;
+    const ok = await window.sideDock.setGithubToken(value);
+    document.getElementById('tokenStatus').textContent = ok ? 'Token save ho gaya, sirf is laptop par hai.' : 'Token save nahi ho saka.';
+    document.getElementById('fToken').value = '';
+  });
+  document.getElementById('clearToken').addEventListener('click', async () => {
+    await window.sideDock.clearGithubToken();
+    document.getElementById('tokenStatus').textContent = 'Token hata diya gaya.';
+  });
   document.getElementById('updateBtn').addEventListener('click', async () => {
     const status = document.getElementById('updateStatus');
     status.textContent = 'Update check ho raha hai, thoda wait karo...';
@@ -182,7 +206,7 @@
   document.getElementById('minBtn').addEventListener('click', () => window.sideDock.minimize());
   document.getElementById('closeBtn').addEventListener('click', () => window.sideDock.close());
 
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.querySelector('#autoBtn .auto-label').textContent = autoStart ? 'Auto-start: On' : 'Auto-start: Off'; render(); });
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.querySelector('#autoBtn .auto-label').textContent = autoStart ? 'Auto-start: On' : 'Auto-start: Off'; document.getElementById('tokenStatus').textContent = state.hasToken ? 'Token pehle se save hai.' : ''; render(); });
 </script>
 </body>
 </html>
