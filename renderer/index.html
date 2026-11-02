@@ -78,7 +78,8 @@
   body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
   body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
   body.collapsed .topbar { flex-direction: column; gap: 8px; width: 30px; justify-content: flex-start; align-items: center; }
-  body.collapsed .brand { width: 30px; justify-content: center; }
+  body.collapsed .brand { width: 30px; justify-content: center; gap: 0; }
+  body.collapsed .brand > div:not(.logo) { display: none; }
   body.collapsed .top-actions { width: 30px; justify-content: center; }
   body.collapsed .tool-list { width: 30px; flex: 1; align-items: center; }
   body.collapsed .tool { width: 30px; height: 30px; padding: 0; justify-content: center; position: relative; }
