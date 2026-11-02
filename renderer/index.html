@@ -19,11 +19,11 @@
   }
   .dock {
     position: relative; height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
-    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 48%, rgba(255,255,255,.04) 58%, transparent 70%), rgba(255,255,255,.13);
-    -webkit-backdrop-filter: blur(15px);
-    backdrop-filter: blur(15px);
+    background: transparent;
+    -webkit-backdrop-filter: blur(31px);
+    backdrop-filter: blur(31px);
     border: 1px solid rgba(255,255,255,.30); border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.50), inset 0 -1px 0 rgba(255,255,255,.10), inset 0 0 0px 0px rgba(255,255,255,0);
     transition: width .18s ease;
     overflow: hidden;
   }
@@ -41,7 +41,7 @@
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
     width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px;
-    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.45);
+    background: transparent; border: 1px solid rgba(255,255,255,.45);
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08);
     display: grid; place-items: center; font-size: 16px; color: #111827;
@@ -52,7 +52,7 @@
   .winbtns { display: flex; gap: 6px; }
   .winbtns button, .settings-btn {
     width: 30px; height: 30px; border-radius: 9px; border: 1px solid rgba(255,255,255,.45);
-    background: rgba(255,255,255,.13); color: var(--muted); cursor: pointer; font-size: 14px;
+    background: transparent; color: var(--muted); cursor: pointer; font-size: 14px;
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08);
   }
@@ -66,7 +66,7 @@
   .tool:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); }
   .tool .icon {
     width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px; display: grid; place-items: center;
-    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.45); font-size: 20px;
+    background: transparent; border: 1px solid rgba(255,255,255,.45); font-size: 20px;
     box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08);
   }
   .tool .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
@@ -75,18 +75,18 @@
   .footer { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .btn {
     display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 6px 12px;
-    border-radius: 10px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.13);
+    border-radius: 10px; border: 1px solid rgba(255,255,255,.28); background: transparent;
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08);
     color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
   }
-  .btn.primary { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.50); color: #111827; box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08); }
+  .btn.primary { background: transparent; border-color: rgba(255,255,255,.50); color: #111827; box-shadow: 0 4px 16px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.08); }
   .btn span.ic { font-size: 17px; flex: 0 0 auto; }
-  .form { display: none; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.28); border-radius: 16px; padding: 12px; gap: 8px; flex-direction: column; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .form { display: none; background: transparent; border: 1px solid rgba(255,255,255,.30); border-radius: 16px; padding: 12px; gap: 8px; flex-direction: column; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
   .form.open { display: flex; }
   .form input, .form select {
     width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
-    background: rgba(0,0,0,.40); color: var(--text); outline: none; font-size: 13px;
+    background: transparent; color: var(--text); outline: none; font-size: 13px;
   }
   .form label { font-size: 11px; color: var(--muted); }
   .update-status { font-size: 12px; color: var(--muted); line-height: 1.5; padding: 0 4px; min-height: 18px; }
@@ -112,7 +112,7 @@
   body.collapsed .btn:hover::after,
   body.collapsed .settings-btn:hover::after {
     content: attr(data-tip); position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 50;
-    background: rgba(0,0,0,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.20); color: var(--text);
+    background: transparent; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.20); color: var(--text);
     padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap;
     box-shadow: 0 10px 30px rgba(0,0,0,.45);
   }
