@@ -181,7 +181,7 @@ function slideToHidden(next) {
       clearInterval(slideTimer); slideTimer = null;
       try { win.setPosition(targetX, s.y); } catch {}
       try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-      try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
+      try { if (arrowWin) { if (hidden) { arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(arrowHtml())); arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
     }
   }, 10);
 }
@@ -193,8 +193,12 @@ function startMousePoll() {
     try {
       if (!win || win.isDestroyed()) return;
       if (!autoHide || hidden) return;
+      if (slideTimer) return;
       const pt = screen.getCursorScreenPoint();
       const b = win.getBounds();
+      const area2 = screen.getPrimaryDisplay().workArea;
+      // Mouse right edge ke 30px andar ho to wo arrow zone hai, hide mat karo, warna slide aadhe me ruk jayegi.
+      if (pt.x >= area2.x + area2.width - 30) return;
       const inside = pt.x >= b.x && pt.x <= b.x + b.width && pt.y >= b.y && pt.y <= b.y + b.height;
       if (!inside) {
         // Mouse sidebar ke bahar hai, to hide karo (renderer ke mouseleave par depend mat karo)
