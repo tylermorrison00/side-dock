@@ -151,7 +151,7 @@ function cardSize() {
   // chhoti hoti hai, aur khali hissa click-through hota hai.
   const area = screen.getPrimaryDisplay().workArea;
   const width = 220;
-  return { width, height: Math.max(400, area.height - 8), x: area.x + area.width - width - 4, y: area.y + 4 };
+  return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function dockWindow() {
   if (!win) return;
@@ -167,6 +167,7 @@ function slideToHidden(next) {
   const targetX = hidden ? (area.x + area.width - 20) : s.x;
   if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
   if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
+  try { if (arrowWin && !hidden) arrowWin.hide(); } catch {}
   const startX = win.getPosition()[0];
   // Smooth slide: 16 steps, 10ms each = ~160ms, ease-out. Arrow tabdeel sirf end par,
   // taake slide beech me na toote aur aadha na reh jaye.

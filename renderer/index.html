@@ -35,7 +35,7 @@
   }
   body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
-  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1; }
   .logo {
     width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; overflow: hidden;
     background: var(--bg); border: 1px solid var(--line);
@@ -44,7 +44,7 @@
   .logo img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 9px; }
   .brand-name { font-weight: 800; font-size: 18px; white-space: nowrap; line-height: 30px; }
   .brand-sub { font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .top-actions { display: flex; gap: 6px; -webkit-app-region: no-drag; }
+  .top-actions { display: flex; gap: 6px; -webkit-app-region: no-drag; flex-shrink: 0; }
   .winbtns { display: flex; gap: 6px; }
   .winbtns button, .settings-btn {
     width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line);
