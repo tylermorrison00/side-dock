@@ -7,5 +7,14 @@
     "kind": "app",
     "logo": "todo-logo-orange-final-inverted.png",
     "logoLight": "todo-logo-orange-final-inverted.png"
+  },
+  {
+    "id": "notes",
+    "name": "Notes",
+    "icon": "",
+    "target": "notes",
+    "kind": "app",
+    "logo": "notes-logo-orange-final.png",
+    "logoLight": "notes-logo-orange-final.png"
   }
 ]

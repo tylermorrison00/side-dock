@@ -23,5 +23,8 @@ contextBridge.exposeInMainWorld('sideDock', {
   getTodos: () => ipcRenderer.invoke('get-todos'),
   addTodo: (text) => ipcRenderer.invoke('add-todo', text),
   toggleTodo: (id) => ipcRenderer.invoke('toggle-todo', id),
-  deleteTodo: (id) => ipcRenderer.invoke('delete-todo', id)
+  deleteTodo: (id) => ipcRenderer.invoke('delete-todo', id),
+  getNotes: () => ipcRenderer.invoke('get-notes'),
+  addNote: (text) => ipcRenderer.invoke('add-note', text),
+  deleteNote: (id) => ipcRenderer.invoke('delete-note', id)
 });

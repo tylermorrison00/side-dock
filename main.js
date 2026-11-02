@@ -137,6 +137,13 @@ function saveTools(tools) {
 
 let todoWin = null;
 let todosPath = '';
+let notesPath = '';
+function loadNotes() {
+  try { return JSON.parse(fs.readFileSync(notesPath, 'utf8')); } catch { return []; }
+}
+function saveNotes(notes) {
+  try { fs.writeFileSync(notesPath, JSON.stringify(notes, null, 2)); } catch {}
+}
 function loadTodos() {
   try { return JSON.parse(fs.readFileSync(todosPath, 'utf8')); } catch { return []; }
 }
@@ -258,6 +265,7 @@ function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   toolsPath = path.join(app.getPath('userData'), 'tools.json');
   todosPath = path.join(app.getPath('userData'), 'todos.json');
+  notesPath = path.join(app.getPath('userData'), 'notes.json');
   tokenPath = path.join(app.getPath('userData'), 'github-token.enc');
   loadSettings();
   const s = cardSize();
@@ -374,6 +382,17 @@ ipcMain.handle('toggle-todo', (_e, id) => {
 ipcMain.handle('delete-todo', (_e, id) => {
   const todos = loadTodos().filter(x => x.id !== id);
   saveTodos(todos); return todos;
+});
+ipcMain.handle('get-notes', () => loadNotes());
+ipcMain.handle('add-note', (_e, text) => {
+  const notes = loadNotes();
+  const item = { id: Date.now().toString(), text: String(text || '').slice(0, 2000) };
+  if (!item.text.trim()) return notes;
+  notes.unshift(item); saveNotes(notes); return notes;
+});
+ipcMain.handle('delete-note', (_e, id) => {
+  const notes = loadNotes().filter(x => x.id !== id);
+  saveNotes(notes); return notes;
 });
 ipcMain.handle('launch-tool', (_e, tool) => {
   if (!tool || !tool.target) return;
