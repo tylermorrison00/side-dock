@@ -185,7 +185,7 @@ function slideToHidden(next) {
         win.setIgnoreMouseEvents(false, { forward: true });
         updateBackgroundMaterial();
       } catch {}
-    }, 320);
+    }, 500);
   } else {
     // Show: pehle window ko poori size par wapas lao, phir renderer ko show kaho, dock CSS slide se andar aayega.
     try {
