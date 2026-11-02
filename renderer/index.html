@@ -139,6 +139,10 @@
       <label>Theme</label>
       <button class="toggle" id="themeBtn">Dark</button>
     </div>
+    <div class="settings-row">
+      <label>Auto-hide</label>
+      <button class="toggle" id="autohideBtn">Off</button>
+    </div>
   </div>
 
   <div class="tool-list" id="toolList"></div>
@@ -162,6 +166,7 @@
   let mode = 'expanded';
   let autoStart = true;
   let theme = 'dark';
+  let autoHide = false;
   let tools = [];
   function applyTheme() {
     document.body.classList.toggle('light', theme === 'light');
@@ -205,6 +210,10 @@
   document.getElementById('autoBtn').addEventListener('click', async () => {
     autoStart = await window.sideDock.setAutostart(!autoStart);
     document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off';
+  });
+  document.getElementById('autohideBtn').addEventListener('click', async () => {
+    autoHide = await window.sideDock.setAutohide(!autoHide);
+    document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off';
   });
   document.getElementById('themeBtn').addEventListener('click', async () => {
     theme = await window.sideDock.setTheme(theme === 'light' ? 'dark' : 'light');
@@ -268,6 +277,7 @@
   }
   let lastShowAt = 0;
   function scheduleHide() {
+    if (!autoHide) return;
     if (Date.now() - lastShowAt < 500) return;
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(() => setHiddenState(true), 800);
@@ -280,7 +290,7 @@
     if (mode === 'collapsed') window.sideDock.setMouseEvents(true);
     scheduleHide();
   });
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; autoHide = state.autoHide === true; document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
 </html>

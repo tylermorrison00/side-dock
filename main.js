@@ -86,6 +86,7 @@ let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
 let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
 let hidden = false; // auto-hide: true = sirf arrow dikhta hai, sidebar side se bahar hai
+let autoHide = false; // default OFF: sidebar hamesha dikhegi, jab tak user Settings se ON na kare
 let slideTimer = null;
 let settingsPath = '';
 let toolsPath = '';
@@ -101,11 +102,12 @@ function loadSettings() {
     if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
     if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
     if (data.theme === 'light' || data.theme === 'dark') theme = data.theme;
+    if (typeof data.autoHide === 'boolean') autoHide = data.autoHide;
   } catch {}
 }
 
 function saveSettings() {
-  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode, autoStart, theme }, null, 2)); } catch {}
+  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode, autoStart, theme, autoHide }, null, 2)); } catch {}
 }
 
 function loadTools() {
@@ -252,10 +254,17 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, autoStart, theme, hidden, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, theme, autoHide, hidden, hasToken: !!loadToken(), tools: loadTools() }));
 ipcMain.handle('set-hidden', (_e, next) => {
+  if (!autoHide) { hidden = false; return hidden; }
   slideToHidden(next);
   return hidden;
+});
+ipcMain.handle('set-autohide', (_e, next) => {
+  autoHide = !!next;
+  saveSettings();
+  if (!autoHide) slideToHidden(false);
+  return autoHide;
 });
 ipcMain.handle('show-from-arrow', () => {
   slideToHidden(false);
