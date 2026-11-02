@@ -154,6 +154,10 @@ function cardSize() {
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function updateBackgroundMaterial() {
+  // Acrylic BAND: square window frost dock ke rounded konon se bahar nikalta hai, sidebar ke niche layer ban jata hai. Is liye hamesha 'none'.
+  try { if (win && !win.isDestroyed() && win.setBackgroundMaterial) win.setBackgroundMaterial('none'); } catch {}
+  return;
+
   // Blur sirf tab jab dock poori window bhar raha ho (expanded + visible + glass theme).
   // Collapsed me acrylic OFF, warna 220px window frost ho kar left me grey rectangle reh jata hai.
   // Hidden me bhi OFF, arrow sirf 24x64 hai.
