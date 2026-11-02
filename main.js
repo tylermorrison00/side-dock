@@ -139,12 +139,16 @@ async function applyAutostart() {
   } catch {}
 }
 
-function dockWindow() {
-  if (!win) return;
+function cardSize() {
   const area = screen.getPrimaryDisplay().workArea;
   const { width } = windowSize();
-  win.setSize(width, area.height);
-  win.setPosition(area.x + area.width - width, area.y);
+  return { width, height: Math.max(400, area.height - 48), x: area.x + area.width - width - 16, y: area.y + 24 };
+}
+function dockWindow() {
+  if (!win) return;
+  const s = cardSize();
+  win.setSize(s.width, s.height);
+  win.setPosition(s.x, s.y);
 }
 
 function createWindow() {
@@ -152,17 +156,18 @@ function createWindow() {
   toolsPath = path.join(app.getPath('userData'), 'tools.json');
   tokenPath = path.join(app.getPath('userData'), 'github-token.enc');
   loadSettings();
-  const area = screen.getPrimaryDisplay().workArea;
-  const { width } = windowSize();
+  const s = cardSize();
   // Windows login par auto-start: Startup shortcut se, electron.exe seedha nahi.
   applyAutostart();
   win = new BrowserWindow({
-    width,
-    height: area.height,
+    width: s.width,
+    height: s.height,
     icon: path.join(__dirname, 'assets', 'icon.png'),
-    x: area.x + area.width - width,
-    y: area.y,
+    x: s.x,
+    y: s.y,
     frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
     resizable: false,
     minimizable: true,
     maximizable: false,
