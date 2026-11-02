@@ -179,6 +179,14 @@ function createWindow() {
   win.on('closed', () => { win = null; });
 }
 
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (win) { try { win.show(); win.focus(); } catch {} }
+  });
+}
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
