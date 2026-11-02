@@ -81,13 +81,18 @@
   body.collapsed .brand { justify-content: center; }
   body.collapsed .top-actions { justify-content: center; }
   body.collapsed .tool-list { width: 60px; flex: 1; align-items: center; }
-  body.collapsed .tool { width: 60px; padding: 6px; justify-content: center; }
-  body.collapsed .tool:hover::after {
-    content: attr(data-name); position: fixed; right: 78px; z-index: 50;
+  body.collapsed .tool { width: 60px; padding: 6px; justify-content: center; position: relative; }
+  body.collapsed .btn { position: relative; }
+  body.collapsed .settings-btn { position: relative; }
+  body.collapsed .tool:hover::after,
+  body.collapsed .btn:hover::after,
+  body.collapsed .settings-btn:hover::after {
+    content: attr(data-tip); position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 50;
     background: #16264d; border: 1px solid var(--line); color: var(--text);
     padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap;
     box-shadow: 0 10px 30px rgba(0,0,0,.45);
   }
+  body.collapsed .tool:hover::after { content: attr(data-name); }
   body.collapsed .footer { width: 60px; }
   body.collapsed .btn { width: 60px; height: 44px; padding: 6px; justify-content: center; }
   body.collapsed .form { display: none !important; }
@@ -101,7 +106,7 @@
       <div><div class="brand-name">Side Dock</div><div class="brand-sub">Premium dock</div></div>
     </div>
     <div class="top-actions">
-      <button class="settings-btn" id="settingsBtn" title="Settings">⚙</button>
+      <button class="settings-btn" id="settingsBtn" title="Settings" data-tip="Settings">⚙</button>
       <div class="winbtns">
         <button id="minBtn" title="Minimize">–</button>
         <button id="closeBtn" title="Close">✕</button>
@@ -130,8 +135,8 @@
   </div>
 
   <div class="footer">
-    <button class="btn" id="addBtn"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
-    <button class="btn" id="collapseBtn"><span class="ic">◀</span><span class="collapse-label">Collapse Sidebar</span></button>
+    <button class="btn" id="addBtn" data-tip="Add tool"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
+    <button class="btn" id="collapseBtn" data-tip="Expand Sidebar"><span class="ic">◀</span><span class="collapse-label">Collapse Sidebar</span></button>
   </div>
 </div>
 
@@ -145,6 +150,7 @@
     document.body.classList.toggle('collapsed', mode === 'collapsed');
     document.querySelector('#collapseBtn .ic').textContent = mode === 'collapsed' ? '▶' : '◀';
     document.querySelector('#collapseBtn .collapse-label').textContent = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
+    document.getElementById('collapseBtn').dataset.tip = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
     list.querySelectorAll('.tool').forEach(el => el.remove());
     tools.forEach(tool => {
       const b = document.createElement('button');
