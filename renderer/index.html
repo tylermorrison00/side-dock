@@ -26,7 +26,9 @@
     --text: #ffffff; --muted: rgba(255, 255, 255, 0.70); --green: #2fe07a; --cyan: #ff7a1a;
     --accent: #ff7a1a;
   }
-  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35); }
+  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35); position: relative; overflow: hidden; }
+  body.glass .dock::before { content: ''; position: absolute; inset: -20px; background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.10)); filter: blur(20px); pointer-events: none; z-index: 0; }
+  body.glass .dock > * { position: relative; z-index: 1; }
   body.glass .logo { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
   body.glass .tool .icon { background: rgba(255, 255, 255, 0.08); }
   body.glass .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
@@ -123,6 +125,8 @@
   body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
   #arrowTab { display: none; width: 24px; height: 64px; background: var(--bg); border: 1px solid var(--line); border-right: 0; border-radius: 12px 0 0 12px; color: var(--accent); font-size: 16px; font-weight: 800; align-items: center; justify-content: center; cursor: pointer; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+  body.hidden { display: grid; place-items: center; }
+  body.hidden #arrowTab { position: static; transform: none; }
   body.hidden #arrowTab { display: grid; }
   /* Auto-hide: hidden hone par dock chhupa rehta hai, arrow alag chhoti window me dikhta hai,
      taake main window click-through ho aur peeche wali window ke button block na hon. */
