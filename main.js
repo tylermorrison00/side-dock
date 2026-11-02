@@ -204,6 +204,10 @@ ipcMain.handle('set-mode', (_e, next) => {
   mode = next === 'collapsed' ? 'collapsed' : 'expanded';
   saveSettings();
   dockWindow();
+  // Windows par transparent window resize ke baad content kabhi blank reh
+  // jata hai, is liye size badalne ke baad page dobara load karo taake
+  // nayi size par saaf paint ho.
+  try { if (win) win.webContents.reloadIgnoringCache(); } catch {}
   return mode;
 });
 ipcMain.handle('add-tool', (_e, tool) => {
