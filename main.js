@@ -154,28 +154,10 @@ function cardSize() {
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function updateBackgroundMaterial() {
-  // Blur bhi chahiye, corners bhi nahi chahiye: is ka hal ye hai ke Glass mode me window ka size hi dock ke barabar kar do,
-  // taake acrylic ke liye dock ke bahar koi area hi na bache jahan se square corner ya grey rectangle nikal sake.
-  // Expanded glass: window 220px, dock 220px, acrylic poori window par, corner dock ke corner ke barabar.
-  // Collapsed glass: window 56px, dock 56px, left me koi empty frost area nahi.
-  // Hidden: window 24x64 arrow, acrylic off (arrow frost CSS se hai).
-  try {
-    if (!win || win.isDestroyed()) return;
-    const area = screen.getPrimaryDisplay().workArea;
-    if (theme === 'glass' && !hidden) {
-      const w = mode === 'collapsed' ? 56 : 220;
-      const h = Math.max(400, area.height - 16);
-      const x = area.x + area.width - w - 4;
-      const y = area.y + 8;
-      win.setResizable(true);
-      win.setSize(w, h);
-      win.setPosition(x, y);
-      if (win.setBackgroundMaterial) win.setBackgroundMaterial('acrylic');
-    } else {
-      if (win.setBackgroundMaterial) win.setBackgroundMaterial('none');
-      // Non-glass ya hidden me window wapas 220px par lao (slideToHidden khud size set karta hai, is liye yahan sirf material off hai)
-    }
-  } catch {}
+  // Blur ki koi alag layer NAHI: na acrylic window, na ::before, na extra window.
+  // Blur sirf dock box par hai (renderer CSS: backdrop-filter blur(20px) on .dock itself).
+  // Is liye window ka size normal cardSize logic se hi chalta hai, glass-specific resize nahi.
+  try { if (win && !win.isDestroyed() && win.setBackgroundMaterial) win.setBackgroundMaterial('none'); } catch {}
 }
 function dockWindow() {
   if (!win) return;
