@@ -9,7 +9,17 @@
   :root {
     --bg: #070d1f; --panel: #0b152e; --panel2: #101e3d; --line: #1b2a4d;
     --text: #e8edf7; --muted: #8b96ad; --green: #2fe07a; --cyan: #38cfff;
+    --accent: #ff7a1a;
   }
+  body.light {
+    --bg: #f3e6d3; --panel: #fbf3e4; --panel2: #efe0c8; --line: #e0cdb0;
+    --text: #1f1a17; --muted: #8a7a6a; --green: #2fe07a; --cyan: #ff7a1a;
+    --accent: #ff7a1a;
+  }
+  body.light .dock { border-color: #e0cdb0; box-shadow: 0 20px 50px rgba(120,90,50,.25), 0 0 0 1px rgba(255,255,255,.50); }
+  body.light .logo { background: linear-gradient(135deg, #fff8ec, #f3e6d3); }
+  body.light .tool .icon { background: #fbf3e4; }
+  body.light .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
   html, body { height: 100%; }
   body {
     background: transparent; color: var(--text);
@@ -23,7 +33,7 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.60), 0 0 0 1px rgba(255,255,255,.06);
     transition: width .18s ease;
   }
-  body.collapsed .dock { width: 42px; padding: 12px 5px; align-items: center; border-radius: 18px 18px 18px 18px; }
+  body.collapsed .dock { width: 92px; padding: 14px 10px; align-items: center; border-radius: 18px 18px 18px 18px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
@@ -61,7 +71,7 @@
     border-radius: 10px; border: 1px solid var(--line); background: var(--panel);
     color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
   }
-  .btn.primary { background: #12351f; border-color: #1e7d4d; color: #b9f5d3; }
+  .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
   .btn span.ic { font-size: 17px; flex: 0 0 auto; display: grid; place-items: center; }
   .btn span.ic svg { display: block; }
   .form { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; gap: 8px; flex-direction: column; }
@@ -79,17 +89,17 @@
   body.collapsed .brand-name, body.collapsed .brand-sub,
   body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
   body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
-  body.collapsed .topbar { flex-direction: column; gap: 8px; width: 30px; justify-content: flex-start; align-items: center; }
-  body.collapsed .brand { width: 30px; justify-content: center; gap: 0; }
+  body.collapsed .topbar { flex-direction: column; gap: 10px; width: 44px; justify-content: flex-start; align-items: center; }
+  body.collapsed .brand { width: 44px; justify-content: center; gap: 0; }
   body.collapsed .brand > div:not(.logo) { display: none; }
-  body.collapsed .top-actions { width: 30px; justify-content: center; }
-  body.collapsed .tool-list { width: 30px; flex: 1; align-items: center; }
-  body.collapsed .tool { width: 30px; height: 30px; padding: 0; justify-content: center; position: relative; }
-  body.collapsed .tool .icon { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; font-size: 15px; }
-  body.collapsed .logo { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; font-size: 16px; }
-  body.collapsed .btn { position: relative; width: 30px; height: 30px; min-height: 30px; padding: 0; justify-content: center; border-radius: 9px; }
-  body.collapsed .btn span.ic { font-size: 15px; }
-  body.collapsed .settings-btn { position: relative; width: 30px; height: 30px; border-radius: 9px; font-size: 14px; }
+  body.collapsed .top-actions { width: 44px; justify-content: center; }
+  body.collapsed .tool-list { width: 44px; flex: 1; align-items: center; gap: 12px; }
+  body.collapsed .tool { width: 44px; height: 44px; padding: 0; justify-content: center; position: relative; }
+  body.collapsed .tool .icon { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px; font-size: 20px; }
+  body.collapsed .logo { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px; font-size: 20px; }
+  body.collapsed .btn { position: relative; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; border-radius: 13px; }
+  body.collapsed .btn span.ic { font-size: 20px; }
+  body.collapsed .settings-btn { position: relative; width: 44px; height: 44px; border-radius: 13px; font-size: 18px; }
   body.collapsed .tool:hover::after,
   body.collapsed .btn:hover::after,
   body.collapsed .settings-btn:hover::after {
@@ -99,7 +109,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,.45);
   }
   body.collapsed .tool:hover::after { content: attr(data-name); }
-  body.collapsed .footer { width: 30px; }
+  body.collapsed .footer { width: 44px; gap: 12px; }
   body.collapsed .form { display: none !important; }
 </style>
 </head>
@@ -126,6 +136,10 @@
       <label>Auto-start</label>
       <button class="toggle" id="autoBtn">On</button>
     </div>
+    <div class="settings-row">
+      <label>Theme</label>
+      <button class="toggle" id="themeBtn">Dark</button>
+    </div>
   </div>
 
   <div class="tool-list" id="toolList"></div>
@@ -148,7 +162,13 @@
 <script>
   let mode = 'expanded';
   let autoStart = true;
+  let theme = 'dark';
   let tools = [];
+  function applyTheme() {
+    document.body.classList.toggle('light', theme === 'light');
+    const tb = document.getElementById('themeBtn');
+    if (tb) tb.textContent = theme === 'light' ? 'Light' : 'Dark';
+  }
   const list = document.getElementById('toolList');
 
   function render() {
@@ -184,6 +204,10 @@
   document.getElementById('autoBtn').addEventListener('click', async () => {
     autoStart = await window.sideDock.setAutostart(!autoStart);
     document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off';
+  });
+  document.getElementById('themeBtn').addEventListener('click', async () => {
+    theme = await window.sideDock.setTheme(theme === 'light' ? 'dark' : 'light');
+    applyTheme();
   });
   document.getElementById('settingsBtn').addEventListener('click', async () => {
     await ensureExpanded();
@@ -223,7 +247,7 @@
   const dockEl = document.querySelector('.dock');
   dockEl.addEventListener('mouseenter', () => window.sideDock.setMouseEvents(false));
   dockEl.addEventListener('mouseleave', () => window.sideDock.setMouseEvents(true));
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
 </html>

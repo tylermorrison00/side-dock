@@ -84,6 +84,7 @@ function runCmd(cmd, cwd) {
 let win = null;
 let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
 let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
+let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
 let settingsPath = '';
 let toolsPath = '';
 
@@ -97,11 +98,12 @@ function loadSettings() {
     const data = JSON.parse(raw);
     if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
     if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
+    if (data.theme === 'light' || data.theme === 'dark') theme = data.theme;
   } catch {}
 }
 
 function saveSettings() {
-  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode, autoStart }, null, 2)); } catch {}
+  try { fs.writeFileSync(settingsPath, JSON.stringify({ mode, autoStart, theme }, null, 2)); } catch {}
 }
 
 function loadTools() {
@@ -194,7 +196,12 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, autoStart, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, theme, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('set-theme', (_e, next) => {
+  theme = next === 'light' ? 'light' : 'dark';
+  saveSettings();
+  return theme;
+});
 ipcMain.handle('set-github-token', (_e, token) => {
   const value = String(token || '').trim();
   if (!value) return false;

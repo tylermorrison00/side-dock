@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('sideDock', {
   getState: () => ipcRenderer.invoke('get-state'),
   setMode: (mode) => ipcRenderer.invoke('set-mode', mode),
+  setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
   setAutostart: (on) => ipcRenderer.invoke('set-autostart', on),
   doUpdate: () => ipcRenderer.invoke('do-update'),
   setGithubToken: (token) => ipcRenderer.invoke('set-github-token', token),
