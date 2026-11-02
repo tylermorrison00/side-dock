@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #070d1f; --panel: #0b152e; --panel2: #101e3d; --line: #1b2a4d;
+    --bg: transparent; --panel: transparent; --panel2: rgba(255,255,255,.10); --line: rgba(255,255,255,.30);
     --text: #111827; --muted: #4b5563; --green: #2fe07a; --cyan: #38cfff;
   }
   html, body { height: 100%; }
@@ -73,7 +73,7 @@
     background: transparent; border: 1px solid transparent; border-radius: 14px;
     color: var(--text); padding: 9px 10px; cursor: pointer; position: relative;
   }
-  .tool:hover { background: var(--panel2); border-color: var(--line); }
+  .tool:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.30); }
   .tool .icon {
     width: 44px; height: 44px; flex: 0 0 44px; border-radius: 13px; display: grid; place-items: center;
     background: transparent; border: 1px solid rgba(255,255,255,.45); font-size: 20px;
