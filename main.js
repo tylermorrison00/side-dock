@@ -101,7 +101,7 @@ function loadSettings() {
     const data = JSON.parse(raw);
     if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
     if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
-    if (data.theme === 'light' || data.theme === 'dark' || data.theme === 'glass') theme = data.theme;
+    if (data.theme === 'light' || data.theme === 'dark') theme = data.theme;
     if (typeof data.autoHide === 'boolean') autoHide = data.autoHide;
   } catch {}
 }
@@ -299,10 +299,9 @@ ipcMain.handle('set-autohide', (_e, next) => {
 });
 ipcMain.handle('show-from-arrow', () => { slideToHidden(false); return hidden; });
 ipcMain.handle('set-theme', (_e, next) => {
-  theme = (next === 'light' || next === 'glass') ? next : 'dark';
+  theme = next === 'light' ? 'light' : 'dark';
   saveSettings();
   updateBackgroundMaterial();
-  // Window-level acrylic BAND hai: ye poori 220px window ko frost karta hai, collapsed me 56px rail ke left bada grey rectangle reh jata hai. Glass sirf dock CSS se hoga.
   return theme;
 });
 ipcMain.handle('set-github-token', (_e, token) => {

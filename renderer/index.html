@@ -20,19 +20,6 @@
   body.light .logo { background: var(--bg); }
   body.light .tool .icon { background: #fbf3e4; }
   body.light .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
-  /* Glassmorphism theme: Blur 20, Refraction 0.05, Depth 15, from hype4 generator screenshot */
-  body.glass {
-    --bg: rgba(255, 255, 255, 0.05); --panel: rgba(255, 255, 255, 0.08); --panel2: rgba(255, 255, 255, 0.12); --line: rgba(255, 255, 255, 0.18);
-    --text: #ffffff; --muted: rgba(255, 255, 255, 0.70); --green: #2fe07a; --cyan: #ff7a1a;
-    --accent: #ff7a1a;
-  }
-  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9), inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9), inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55), inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55), inset 0 0 2px rgba(0, 0, 0, 0.8), 0 8px 32px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; }
-  body.glass .dock::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent); }
-  body.glass .dock::after { content: ''; position: absolute; top: 0; left: 0; width: 1px; height: 100%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3)); }
-  body.glass.collapsed .dock { box-shadow: 0 10px 20px rgba(0,0,0,0.30); background: rgba(255, 255, 255, 0.05); border-radius: 18px; }
-  body.glass .logo { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
-  body.glass .tool .icon { background: rgba(255, 255, 255, 0.08); }
-  body.glass .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
   html, body { height: 100%; }
   body {
     background: transparent; color: var(--text);
@@ -131,7 +118,6 @@
   body.arrow-only .dock { display: none !important; }
   body.arrow-only #arrowTab { position: static; transform: none; }
   body.hidden #arrowTab { display: grid; }
-  body.glass #arrowTab { background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(40,42,48,0.55)); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.18); }
   /* Auto-hide: hidden hone par dock chhupa rehta hai, arrow alag chhoti window me dikhta hai,
      taake main window click-through ho aur peeche wali window ke button block na hon. */
   /* body.hidden dock slide handled above */
@@ -191,11 +177,10 @@
   let tools = [];
   function applyTheme() {
     document.body.classList.toggle('light', theme === 'light');
-    document.body.classList.toggle('glass', theme === 'glass');
     const tb = document.getElementById('themeBtn');
-    if (tb) tb.textContent = theme === 'light' ? 'Light' : (theme === 'glass' ? 'Glass' : 'Dark');
+    if (tb) tb.textContent = theme === 'light' ? 'Light' : 'Dark';
     const li = document.getElementById('logoImg');
-    if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : (theme === 'glass' ? '../assets/icon-orange-transparent.png' : '../assets/icon-orange-dark.png');
+    if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
   }
   const list = document.getElementById('toolList');
 
@@ -242,7 +227,7 @@
   document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off';
   });
   document.getElementById('themeBtn').addEventListener('click', async () => {
-    theme = await window.sideDock.setTheme(theme === 'dark' ? 'light' : (theme === 'light' ? 'glass' : 'dark'));
+    theme = await window.sideDock.setTheme(theme === 'light' ? 'dark' : 'light');
     applyTheme();
   });
   document.getElementById('settingsBtn').addEventListener('click', async () => {
@@ -334,7 +319,7 @@
     if (mode === 'collapsed') window.sideDock.setMouseEvents(true);
     // Hide sirf main poller se hoga, DOM mouseleave se nahi, taake race na ho.
   });
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = (state.theme === 'light' || state.theme === 'glass') ? state.theme : 'dark'; autoHide = state.autoHide === true; document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; autoHide = state.autoHide === true; document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
 </html>
