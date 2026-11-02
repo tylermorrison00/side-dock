@@ -62,7 +62,8 @@
     color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
   }
   .btn.primary { background: #12351f; border-color: #1e7d4d; color: #b9f5d3; }
-  .btn span.ic { font-size: 17px; flex: 0 0 auto; }
+  .btn span.ic { font-size: 17px; flex: 0 0 auto; display: grid; place-items: center; }
+  .btn span.ic svg { display: block; }
   .form { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; gap: 8px; flex-direction: column; }
   .form.open { display: flex; }
   .form input, .form select {
@@ -140,7 +141,7 @@
 
   <div class="footer">
     <button class="btn" id="addBtn" data-tip="Add tool"><span class="ic">＋</span><span class="add-label">Add tool</span></button>
-    <button class="btn" id="collapseBtn" data-tip="Expand Sidebar"><span class="ic">◀</span><span class="collapse-label">Collapse Sidebar</span></button>
+    <button class="btn" id="collapseBtn" data-tip="Expand Sidebar"><span class="ic" id="collapseIc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38cfff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg></span><span class="collapse-label">Collapse Sidebar</span></button>
   </div>
 </div>
 
@@ -152,7 +153,9 @@
 
   function render() {
     document.body.classList.toggle('collapsed', mode === 'collapsed');
-    document.querySelector('#collapseBtn .ic').textContent = mode === 'collapsed' ? '▶' : '◀';
+    document.getElementById('collapseIc').innerHTML = mode === 'collapsed'
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38cfff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m8 15 3-3-3-3"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38cfff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>';
     document.querySelector('#collapseBtn .collapse-label').textContent = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
     document.getElementById('collapseBtn').dataset.tip = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
     list.querySelectorAll('.tool').forEach(el => el.remove());
