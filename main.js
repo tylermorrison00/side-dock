@@ -171,6 +171,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
+    backgroundMaterial: 'acrylic',
     resizable: false,
     minimizable: true,
     maximizable: false,
@@ -178,6 +179,7 @@ function createWindow() {
     skipTaskbar: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
+  try { win.setBackgroundMaterial('acrylic'); } catch {}
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   win.on('closed', () => { win = null; });
 }
