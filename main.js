@@ -166,18 +166,24 @@ function slideToHidden(next) {
   const s = cardSize();
   const targetX = hidden ? (area.x + area.width - 20) : s.x;
   if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
-  // FIX for half-open: NO interval animation. Interval slide was getting cut off
-  // by mouse events / arrow hide / hide-timer, leaving the window half out.
-  // Instant full move, then one forced re-assert after 250ms, so it cannot stay half.
-  try { win.setPosition(targetX, s.y); } catch {}
-  try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-  try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
-  slideTimer = setTimeout(() => {
-    try { win.setPosition(targetX, s.y); } catch {}
-    try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-    try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
-    slideTimer = null;
-  }, 250);
+  if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
+  const startX = win.getPosition()[0];
+  // Smooth slide: 16 steps, 10ms each = ~160ms, ease-out. Arrow tabdeel sirf end par,
+  // taake slide beech me na toote aur aadha na reh jaye.
+  const steps = 16;
+  let i = 0;
+  slideTimer = setInterval(() => {
+    i++;
+    const prog = 1 - Math.pow(1 - i / steps, 2);
+    const x = Math.round(startX + (targetX - startX) * prog);
+    try { win.setPosition(x, s.y); } catch {}
+    if (i >= steps) {
+      clearInterval(slideTimer); slideTimer = null;
+      try { win.setPosition(targetX, s.y); } catch {}
+      try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
+      try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
+    }
+  }, 10);
 }
 
 let mousePollTimer = null;
@@ -197,6 +203,12 @@ function startMousePoll() {
       }
     } catch {}
   }, 500);
+}
+function arrowHtml() {
+  const light = theme === 'light';
+  const bg = light ? '#f3e6d3' : '#1a1210';
+  const border = light ? '#e0cdb0' : '#3a2a22';
+  return '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid ' + border + ';border-right:0;border-radius:12px 0 0 12px;background:' + bg + ';color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>';
 }
 let arrowWin = null;
 function createArrowWindow() {
@@ -286,6 +298,7 @@ ipcMain.handle('show-from-arrow', () => {
 ipcMain.handle('set-theme', (_e, next) => {
   theme = next === 'light' ? 'light' : 'dark';
   saveSettings();
+  try { if (arrowWin && !arrowWin.isDestroyed()) arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(arrowHtml())); } catch {}
   return theme;
 });
 ipcMain.handle('set-github-token', (_e, token) => {
