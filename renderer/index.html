@@ -122,10 +122,6 @@
     </div>
     <div class="top-actions">
       <button class="settings-btn" id="settingsBtn" title="Settings" data-tip="Settings">⚙</button>
-      <div class="winbtns">
-        <button id="minBtn" title="Minimize">–</button>
-        <button id="closeBtn" title="Close">✕</button>
-      </div>
     </div>
   </div>
 
@@ -243,8 +239,6 @@
     document.getElementById('fName').value = ''; document.getElementById('fTarget').value = ''; document.getElementById('fIcon').value = '';
     render();
   });
-  document.getElementById('minBtn').addEventListener('click', () => window.sideDock.minimize());
-  document.getElementById('closeBtn').addEventListener('click', () => window.sideDock.close());
 
   const dockEl = document.querySelector('.dock');
   dockEl.addEventListener('mouseenter', () => window.sideDock.setMouseEvents(false));

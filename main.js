@@ -89,7 +89,7 @@ let settingsPath = '';
 let toolsPath = '';
 
 function windowSize() {
-  return mode === 'collapsed' ? { width: 76, height: 0 } : { width: 280, height: 0 };
+  return mode === 'collapsed' ? { width: 76, height: 0 } : { width: 240, height: 0 };
 }
 
 function loadSettings() {
@@ -146,7 +146,7 @@ function cardSize() {
   // window resize ya relaunch se jhatka na lage. Sirf andar wali card
   // chhoti hoti hai, aur khali hissa click-through hota hai.
   const area = screen.getPrimaryDisplay().workArea;
-  const width = 280;
+  const width = 240;
   return { width, height: Math.max(400, area.height - 8), x: area.x + area.width - width - 4, y: area.y + 4 };
 }
 function dockWindow() {
