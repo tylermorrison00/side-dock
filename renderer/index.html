@@ -259,12 +259,16 @@
   // warna window wapas aa jayegi par dock chhupa hi rahega.
   if (window.sideDock.onAutoHideShow) {
     window.sideDock.onAutoHideShow(() => {
+      cancelHide();
+      lastShowAt = Date.now();
       hidden = false;
       document.body.classList.remove('hidden');
       window.sideDock.setMouseEvents(false);
     });
   }
+  let lastShowAt = 0;
   function scheduleHide() {
+    if (Date.now() - lastShowAt < 500) return;
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(() => setHiddenState(true), 800);
   }

@@ -160,17 +160,16 @@ function dockWindow() {
 function slideToHidden(next) {
   if (!win) return;
   hidden = !!next;
-  // Arrow window: hidden ho to dikhao, visible ho to chhupao.
-  try { if (arrowWin) { if (hidden) arrowWin.show(); else arrowWin.hide(); } } catch {}
+  // Arrow window: hidden ho to slide ke end par dikhao, visible ho to slide ke end par chhupao,
+  // warna slide ke beech me arrow gayab hone se mouse hover toot jata hai aur sidebar adhoori khulti hai.
   const area = screen.getPrimaryDisplay().workArea;
   const s = cardSize();
   const targetX = hidden ? (area.x + area.width - 20) : s.x;
   if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
   const startX = win.getPosition()[0];
-  // Hidden hone par window ko sirf arrow tak bahar le jao, aur click-through ON rakho
-  // taake peeche wali window ke button block na hon. Sirf arrow wala hissa click lega,
-  // wo alag chhoti window se handle hoga, is liye yahan ignore ON hai.
-  try { win.setIgnoreMouseEvents(true, { forward: true }); } catch {}
+  // Show karte waqt mouse events ON rakho, taake slide ke dauran dock mouseenter mile.
+  // Hide karte waqt click-through ON rakho, taake peeche wali window ke button block na hon.
+  try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
   const steps = 10;
   let i = 0;
   slideTimer = setInterval(() => {
@@ -180,9 +179,8 @@ function slideToHidden(next) {
     if (i >= steps) {
       clearInterval(slideTimer); slideTimer = null;
       try { win.setPosition(targetX, s.y); } catch {}
-      // Slide khatam hone ke baad bhi ignore ON rakho jab hidden hai,
-      // visible hone par renderer dobara OFF karega.
-      if (hidden) { try { win.setIgnoreMouseEvents(true, { forward: true }); } catch {} }
+      try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
+      try { if (arrowWin) { if (hidden) arrowWin.show(); else arrowWin.hide(); } } catch {}
     }
   }, 12);
 }
