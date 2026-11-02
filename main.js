@@ -154,10 +154,23 @@ function cardSize() {
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function updateBackgroundMaterial() {
-  // Blur ki koi alag layer NAHI: na acrylic window, na ::before, na extra window.
-  // Blur sirf dock box par hai (renderer CSS: backdrop-filter blur(20px) on .dock itself).
-  // Is liye window ka size normal cardSize logic se hi chalta hai, glass-specific resize nahi.
-  try { if (win && !win.isDestroyed() && win.setBackgroundMaterial) win.setBackgroundMaterial('none'); } catch {}
+  // Pattern A: Glass mode me window hi box hai, is liye acrylic window-level hone ke bawajood alag layer nahi hai,
+  // kyunki window ka size dock ke barabar hai (expanded 220, collapsed 56), dock ke bahar koi area nahi.
+  // Non-glass ya hidden me acrylic off.
+  try {
+    if (!win || win.isDestroyed()) return;
+    const area = screen.getPrimaryDisplay().workArea;
+    if (theme === 'glass' && !hidden) {
+      const w = mode === 'collapsed' ? 56 : 220;
+      const h = Math.max(400, area.height - 16);
+      win.setResizable(true);
+      win.setSize(w, h);
+      win.setPosition(area.x + area.width - w - 4, area.y + 8);
+      if (win.setBackgroundMaterial) win.setBackgroundMaterial('acrylic');
+    } else {
+      if (win.setBackgroundMaterial) win.setBackgroundMaterial('none');
+    }
+  } catch {}
 }
 function dockWindow() {
   if (!win) return;
@@ -224,6 +237,14 @@ function createWindow() {
   tokenPath = path.join(app.getPath('userData'), 'github-token.enc');
   loadSettings();
   const s = cardSize();
+  // Pattern A (research): Glass mode me window hi box hai, transparent nahi, acrylic poori window par, gap window ke bahar x/y se.
+  // Is se acrylic ke liye dock ke bahar koi area nahi, na alag layer, na square corner layer.
+  const isGlassAtLaunch = theme === 'glass';
+  if (isGlassAtLaunch) {
+    s.width = mode === 'collapsed' ? 56 : 220;
+    const areaG = screen.getPrimaryDisplay().workArea;
+    s.x = areaG.x + areaG.width - s.width - 4;
+  }
   // Windows login par auto-start: Startup shortcut se, electron.exe seedha nahi.
   applyAutostart();
   win = new BrowserWindow({
@@ -233,8 +254,10 @@ function createWindow() {
     x: s.x,
     y: s.y,
     frame: false,
-    transparent: true,
-    backgroundColor: '#00000000',
+    transparent: !isGlassAtLaunch,
+    backgroundMaterial: isGlassAtLaunch ? 'acrylic' : undefined,
+    roundedCorners: true,
+    backgroundColor: isGlassAtLaunch ? undefined : '#00000000',
     resizable: false,
     minimizable: true,
     maximizable: false,
