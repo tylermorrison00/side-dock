@@ -173,6 +173,7 @@ function slideToHidden(next) {
     // Step 2: slide khatam hone ke baad window ko sirf arrow size par le jao, taake koi full-height strip, shadow ya click-block na rahe.
     hideTimeout = setTimeout(() => {
       try {
+        win.setResizable(true);
         win.setSize(24, 64);
         win.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
         win.setIgnoreMouseEvents(false, { forward: true });
@@ -181,6 +182,7 @@ function slideToHidden(next) {
   } else {
     // Show: pehle window ko poori size par wapas lao, phir renderer ko show kaho, dock CSS slide se andar aayega.
     try {
+      win.setResizable(true);
       win.setSize(s.width, s.height);
       win.setPosition(s.x, s.y);
       win.setIgnoreMouseEvents(false, { forward: true });
