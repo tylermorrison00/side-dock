@@ -33,7 +33,7 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.60);
     transition: width .18s ease;
   }
-  body.collapsed .dock { width: 64px; padding: 14px 10px; align-items: center; border-radius: 18px 18px 18px 18px; }
+  body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
@@ -89,17 +89,17 @@
   body.collapsed .brand-name, body.collapsed .brand-sub,
   body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
   body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
-  body.collapsed .topbar { flex-direction: column; gap: 10px; width: 44px; justify-content: flex-start; align-items: center; }
-  body.collapsed .brand { width: 44px; justify-content: center; gap: 0; }
+  body.collapsed .topbar { flex-direction: column; gap: 10px; width: 32px; justify-content: flex-start; align-items: center; }
+  body.collapsed .brand { width: 32px; justify-content: center; gap: 0; }
   body.collapsed .brand > div:not(.logo) { display: none; }
-  body.collapsed .top-actions { width: 44px; justify-content: center; }
-  body.collapsed .tool-list { width: 44px; flex: 1; align-items: center; gap: 12px; }
-  body.collapsed .tool { width: 36px; height: 36px; padding: 0; justify-content: center; position: relative; }
-  body.collapsed .tool .icon { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; font-size: 17px; }
-  body.collapsed .logo { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; font-size: 17px; }
-  body.collapsed .btn { position: relative; width: 36px; height: 36px; min-height: 36px; padding: 0; justify-content: center; border-radius: 11px; }
-  body.collapsed .btn span.ic { font-size: 17px; }
-  body.collapsed .settings-btn { position: relative; width: 36px; height: 36px; border-radius: 11px; font-size: 16px; }
+  body.collapsed .top-actions { width: 32px; justify-content: center; }
+  body.collapsed .tool-list { width: 32px; flex: 1; align-items: center; gap: 12px; }
+  body.collapsed .tool { width: 32px; height: 32px; padding: 0; justify-content: center; position: relative; }
+  body.collapsed .tool .icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; font-size: 16px; }
+  body.collapsed .logo { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; font-size: 16px; }
+  body.collapsed .btn { position: relative; width: 32px; height: 32px; min-height: 32px; padding: 0; justify-content: center; border-radius: 10px; }
+  body.collapsed .btn span.ic { font-size: 16px; }
+  body.collapsed .settings-btn { position: relative; width: 32px; height: 32px; border-radius: 10px; font-size: 15px; }
   body.collapsed .tool:hover::after,
   body.collapsed .btn:hover::after,
   body.collapsed .settings-btn:hover::after {
@@ -109,7 +109,7 @@
     box-shadow: 0 10px 30px rgba(0,0,0,.45);
   }
   body.collapsed .tool:hover::after { content: attr(data-name); }
-  body.collapsed .footer { width: 44px; gap: 12px; }
+  body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
 </style>
 </head>
