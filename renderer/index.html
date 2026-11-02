@@ -117,7 +117,7 @@
 <div class="dock">
   <div class="topbar">
     <div class="brand">
-      <div class="logo"><img src="../assets/icon-orange-transparent.png" alt="Side Dock" onerror="this.src='../assets/icon-orange.png'; this.onerror=function(){this.src='../assets/icon.png'; this.onerror=function(){this.style.display='none'; this.parentElement.textContent='⚡';};};"></div>
+      <div class="logo"><img id="logoImg" src="../assets/icon-orange-dark.png" alt="Side Dock" onerror="this.src='../assets/icon-orange-transparent.png'; this.onerror=function(){this.src='../assets/icon.png'; this.onerror=function(){this.style.display='none'; this.parentElement.textContent='⚡';};};"></div>
       <div class="brand-name">Side Dock</div>
     </div>
     <div class="top-actions">
@@ -168,6 +168,8 @@
     document.body.classList.toggle('light', theme === 'light');
     const tb = document.getElementById('themeBtn');
     if (tb) tb.textContent = theme === 'light' ? 'Light' : 'Dark';
+    const li = document.getElementById('logoImg');
+    if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
   }
   const list = document.getElementById('toolList');
 
