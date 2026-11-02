@@ -145,7 +145,7 @@ function cardSize() {
   // chhoti hoti hai, aur khali hissa click-through hota hai.
   const area = screen.getPrimaryDisplay().workArea;
   const width = 280;
-  return { width, height: Math.max(400, area.height - 48), x: area.x + area.width - width - 16, y: area.y + 24 };
+  return { width, height: Math.max(400, area.height - 8), x: area.x + area.width - width - 4, y: area.y + 4 };
 }
 function dockWindow() {
   if (!win) return;
