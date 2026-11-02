@@ -111,18 +111,47 @@ function saveSettings() {
 }
 
 function loadTools() {
-  try { return JSON.parse(fs.readFileSync(toolsPath, 'utf8')); } catch {}
+  let defaults = [];
+  try { defaults = JSON.parse(fs.readFileSync(path.join(__dirname, 'tools.json'), 'utf8')); } catch {}
   try {
-    const defaults = JSON.parse(fs.readFileSync(path.join(__dirname, 'tools.json'), 'utf8'));
-    fs.writeFileSync(toolsPath, JSON.stringify(defaults, null, 2));
-    return defaults;
-  } catch { return []; }
+    const existing = JSON.parse(fs.readFileSync(toolsPath, 'utf8'));
+    // Naye built-in tools (jaise To Do List) purane users ko bhi mil jayen, unke tools delete kiye baghair.
+    let changed = false;
+    for (const d of defaults) {
+      if (!existing.find(x => x.id === d.id)) { existing.push(d); changed = true; }
+    }
+    if (changed) { try { fs.writeFileSync(toolsPath, JSON.stringify(existing, null, 2)); } catch {} }
+    return existing;
+  } catch {}
+  try { fs.writeFileSync(toolsPath, JSON.stringify(defaults, null, 2)); } catch {}
+  return defaults;
 }
 
 function saveTools(tools) {
   fs.writeFileSync(toolsPath, JSON.stringify(tools, null, 2));
 }
 
+
+let todoWin = null;
+let todosPath = '';
+function loadTodos() {
+  try { return JSON.parse(fs.readFileSync(todosPath, 'utf8')); } catch { return []; }
+}
+function saveTodos(todos) {
+  try { fs.writeFileSync(todosPath, JSON.stringify(todos, null, 2)); } catch {}
+}
+function openTodoWindow() {
+  if (todoWin && !todoWin.isDestroyed()) { todoWin.focus(); return; }
+  todoWin = new BrowserWindow({
+    width: 400, height: 600,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    title: 'To Do List',
+    autoHideMenuBar: true,
+    webPreferences: { preload: path.join(__dirname, 'preload-todo.js'), contextIsolation: true, nodeIntegration: false }
+  });
+  todoWin.loadFile(path.join(__dirname, 'renderer', 'todo.html'));
+  todoWin.on('closed', () => { todoWin = null; });
+}
 function startupShortcutPath() {
   return path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', 'Side Dock.lnk');
 }
@@ -226,6 +255,7 @@ function startMousePoll() {
 function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   toolsPath = path.join(app.getPath('userData'), 'tools.json');
+  todosPath = path.join(app.getPath('userData'), 'todos.json');
   tokenPath = path.join(app.getPath('userData'), 'github-token.enc');
   loadSettings();
   const s = cardSize();
@@ -324,8 +354,24 @@ ipcMain.handle('remove-tool', (_e, id) => {
   saveTools(tools);
   return tools;
 });
+ipcMain.handle('get-todos', () => loadTodos());
+ipcMain.handle('add-todo', (_e, text) => {
+  const todos = loadTodos();
+  const item = { id: Date.now().toString(), text: String(text || '').slice(0, 200), done: false };
+  if (!item.text.trim()) return todos;
+  todos.push(item); saveTodos(todos); return todos;
+});
+ipcMain.handle('toggle-todo', (_e, id) => {
+  const todos = loadTodos().map(x => x.id === id ? { ...x, done: !x.done } : x);
+  saveTodos(todos); return todos;
+});
+ipcMain.handle('delete-todo', (_e, id) => {
+  const todos = loadTodos().filter(x => x.id !== id);
+  saveTodos(todos); return todos;
+});
 ipcMain.handle('launch-tool', (_e, tool) => {
   if (!tool || !tool.target) return;
+  if (tool.target === 'todo' || tool.id === 'todo-list') { openTodoWindow(); return; }
   if (tool.kind === 'url') { shell.openExternal(tool.target); return; }
   // App: a file path opens directly, anything else runs as a local command.
   if (fs.existsSync(tool.target)) { shell.openPath(tool.target); return; }

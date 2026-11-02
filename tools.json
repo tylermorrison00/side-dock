@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "todo-list",
+    "name": "To Do List",
+    "icon": "\u2611",
+    "target": "todo",
+    "kind": "app"
+  }
+]

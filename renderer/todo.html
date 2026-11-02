@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Do List</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, Segoe UI, system-ui, sans-serif; background: #1a1210; color: #f5e9dc; padding: 20px; }
+  h1 { font-size: 22px; margin-bottom: 16px; }
+  h1 span { color: #ff7a1a; }
+  .add { display: flex; gap: 8px; margin-bottom: 16px; }
+  .add input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #3a2a22; background: #2e211a; color: #f5e9dc; outline: none; font-size: 14px; }
+  .add button { padding: 10px 16px; border-radius: 10px; border: none; background: #ff7a1a; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
+  .item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #241a15; border: 1px solid #3a2a22; margin-bottom: 8px; }
+  .item input { width: 18px; height: 18px; accent-color: #ff7a1a; cursor: pointer; flex-shrink: 0; }
+  .item span { flex: 1; font-size: 14px; word-break: break-word; }
+  .item.done span { text-decoration: line-through; opacity: 0.5; }
+  .item button { background: none; border: none; color: #a89888; cursor: pointer; font-size: 16px; }
+  .empty { text-align: center; color: #a89888; padding: 30px 10px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <h1><span>☑</span> To Do List</h1>
+  <div class="add">
+    <input id="todoInput" placeholder="Add a new task..." autofocus>
+    <button id="addBtn">Add</button>
+  </div>
+  <div id="todoList"></div>
+  <script>
+    const input = document.getElementById('todoInput');
+    const list = document.getElementById('todoList');
+    async function render() {
+      const todos = await window.todo.getTodos();
+      list.innerHTML = '';
+      if (!todos.length) { list.innerHTML = '<div class="empty">No tasks yet. Add your first task above.</div>'; return; }
+      todos.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'item' + (t.done ? ' done' : '');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.checked = t.done;
+        cb.addEventListener('change', async () => { await window.todo.toggleTodo(t.id); render(); });
+        const span = document.createElement('span'); span.textContent = t.text;
+        const del = document.createElement('button'); del.textContent = '✕';
+        del.addEventListener('click', async () => { await window.todo.deleteTodo(t.id); render(); });
+        div.append(cb, span, del);
+        list.appendChild(div);
+      });
+    }
+    async function add() {
+      const text = input.value.trim();
+      if (!text) return;
+      await window.todo.addTodo(text);
+      input.value = ''; input.focus(); render();
+    }
+    document.getElementById('addBtn').addEventListener('click', add);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') add(); });
+    render();
+  </script>
+</body>
+</html>
