@@ -86,7 +86,7 @@ let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
 let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
 let hidden = false; // auto-hide: true = sirf arrow dikhta hai, sidebar side se bahar hai
-let autoHide = false; // default OFF: sidebar hamesha dikhegi, jab tak user Settings se ON na kare
+let autoHide = true; // default ON: kaam karte waqt sidebar chhup jayegi, sirf arrow dikhega
 let slideTimer = null;
 let settingsPath = '';
 let toolsPath = '';
