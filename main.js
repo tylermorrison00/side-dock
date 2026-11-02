@@ -153,6 +153,16 @@ function cardSize() {
   const width = 220;
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
+function updateBackgroundMaterial() {
+  // Blur sirf tab jab dock poori window bhar raha ho (expanded + visible + glass theme).
+  // Collapsed me acrylic OFF, warna 220px window frost ho kar left me grey rectangle reh jata hai.
+  // Hidden me bhi OFF, arrow sirf 24x64 hai.
+  try {
+    if (win && !win.isDestroyed() && win.setBackgroundMaterial) {
+      win.setBackgroundMaterial((theme === 'glass' && mode === 'expanded' && !hidden) ? 'acrylic' : 'none');
+    }
+  } catch {}
+}
 function dockWindow() {
   if (!win) return;
   const s = cardSize();
@@ -177,6 +187,7 @@ function slideToHidden(next) {
         win.setSize(24, 64);
         win.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
         win.setIgnoreMouseEvents(false, { forward: true });
+        updateBackgroundMaterial();
       } catch {}
     }, 200);
   } else {
@@ -186,6 +197,7 @@ function slideToHidden(next) {
       win.setSize(s.width, s.height);
       win.setPosition(s.x, s.y);
       win.setIgnoreMouseEvents(false, { forward: true });
+      updateBackgroundMaterial();
       win.webContents.send('auto-hide-show');
     } catch {}
   }
@@ -235,6 +247,7 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  win.webContents.once('did-finish-load', () => { updateBackgroundMaterial(); });
   win.on('closed', () => { win = null; });
   launchAt = Date.now();
   startMousePoll();
@@ -269,6 +282,7 @@ ipcMain.handle('show-from-arrow', () => { slideToHidden(false); return hidden; }
 ipcMain.handle('set-theme', (_e, next) => {
   theme = (next === 'light' || next === 'glass') ? next : 'dark';
   saveSettings();
+  updateBackgroundMaterial();
   // Window-level acrylic BAND hai: ye poori 220px window ko frost karta hai, collapsed me 56px rail ke left bada grey rectangle reh jata hai. Glass sirf dock CSS se hoga.
   return theme;
 });
@@ -291,6 +305,7 @@ ipcMain.handle('set-autostart', async (_e, next) => {
 ipcMain.handle('set-mode', (_e, next) => {
   mode = next === 'collapsed' ? 'collapsed' : 'expanded';
   saveSettings();
+  updateBackgroundMaterial();
   return mode;
 });
 ipcMain.handle('set-mouse-events', (_e, ignore) => {
