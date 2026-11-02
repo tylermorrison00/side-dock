@@ -180,7 +180,7 @@ function slideToHidden(next) {
       clearInterval(slideTimer); slideTimer = null;
       try { win.setPosition(targetX, s.y); } catch {}
       try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-      try { if (arrowWin) { if (hidden) arrowWin.show(); else arrowWin.hide(); } } catch {}
+      try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
     }
   }, 12);
 }
@@ -199,7 +199,7 @@ function createArrowWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
-    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>document.getElementById("a").addEventListener("mouseenter",()=>window.sideDock.showFromArrow());</script></body></html>'
+    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>'
   ));
   arrowWin.on('closed', () => { arrowWin = null; });
   arrowWin.hide();
