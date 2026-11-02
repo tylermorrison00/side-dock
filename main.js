@@ -235,7 +235,6 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  try { if (theme === 'glass' && win.setBackgroundMaterial) win.setBackgroundMaterial('acrylic'); } catch {}
   win.on('closed', () => { win = null; });
   launchAt = Date.now();
   startMousePoll();
@@ -270,7 +269,7 @@ ipcMain.handle('show-from-arrow', () => { slideToHidden(false); return hidden; }
 ipcMain.handle('set-theme', (_e, next) => {
   theme = (next === 'light' || next === 'glass') ? next : 'dark';
   saveSettings();
-  try { if (win && !win.isDestroyed() && win.setBackgroundMaterial) win.setBackgroundMaterial(theme === 'glass' ? 'acrylic' : 'none'); } catch {}
+  // Window-level acrylic BAND hai: ye poori 220px window ko frost karta hai, collapsed me 56px rail ke left bada grey rectangle reh jata hai. Glass sirf dock CSS se hoga.
   return theme;
 });
 ipcMain.handle('set-github-token', (_e, token) => {

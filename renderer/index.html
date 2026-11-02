@@ -26,9 +26,8 @@
     --text: #ffffff; --muted: rgba(255, 255, 255, 0.70); --green: #2fe07a; --cyan: #ff7a1a;
     --accent: #ff7a1a;
   }
-  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35); position: relative; overflow: hidden; }
-  body.glass .dock::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.25); pointer-events: none; z-index: 0; }
-  body.glass .dock > * { position: relative; z-index: 1; }
+  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35); }
+  body.glass.collapsed .dock { box-shadow: 0 10px 20px rgba(0,0,0,0.30); }
   body.glass .logo { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
   body.glass .tool .icon { background: rgba(255, 255, 255, 0.08); }
   body.glass .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
