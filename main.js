@@ -162,29 +162,22 @@ function dockWindow() {
 function slideToHidden(next) {
   if (!win) return;
   hidden = !!next;
-  // Arrow window: hidden ho to slide ke end par dikhao, visible ho to slide ke end par chhupao,
-  // warna slide ke beech me arrow gayab hone se mouse hover toot jata hai aur sidebar adhoori khulti hai.
   const area = screen.getPrimaryDisplay().workArea;
   const s = cardSize();
   const targetX = hidden ? (area.x + area.width - 20) : s.x;
   if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
-  const startX = win.getPosition()[0];
-  // Show karte waqt mouse events ON rakho, taake slide ke dauran dock mouseenter mile.
-  // Hide karte waqt click-through ON rakho, taake peeche wali window ke button block na hon.
+  // FIX for half-open: NO interval animation. Interval slide was getting cut off
+  // by mouse events / arrow hide / hide-timer, leaving the window half out.
+  // Instant full move, then one forced re-assert after 250ms, so it cannot stay half.
+  try { win.setPosition(targetX, s.y); } catch {}
   try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-  const steps = 10;
-  let i = 0;
-  slideTimer = setInterval(() => {
-    i++;
-    const x = Math.round(startX + (targetX - startX) * (i / steps));
-    try { win.setPosition(x, s.y); } catch {}
-    if (i >= steps) {
-      clearInterval(slideTimer); slideTimer = null;
-      try { win.setPosition(targetX, s.y); } catch {}
-      try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-      try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
-    }
-  }, 12);
+  try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
+  slideTimer = setTimeout(() => {
+    try { win.setPosition(targetX, s.y); } catch {}
+    try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
+    try { if (arrowWin) { if (hidden) { arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
+    slideTimer = null;
+  }, 250);
 }
 
 let arrowWin = null;

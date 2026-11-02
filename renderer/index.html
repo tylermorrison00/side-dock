@@ -278,7 +278,7 @@
   let lastShowAt = 0;
   function scheduleHide() {
     if (!autoHide) return;
-    if (Date.now() - lastShowAt < 500) return;
+    if (Date.now() - lastShowAt < 2000) return;
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(() => setHiddenState(true), 800);
   }
