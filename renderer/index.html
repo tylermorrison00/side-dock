@@ -42,7 +42,7 @@
     height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
     background: var(--bg); border: 1px solid var(--line); border-radius: 24px 24px 24px 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,.60);
-    transition: width .18s ease, transform .18s ease, opacity .18s ease;
+    transition: width .30s ease, transform .30s ease, opacity .30s ease;
   }
   body.hidden .dock { transform: translateX(120%); opacity: 0; pointer-events: none; }
   body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
@@ -303,8 +303,11 @@
       cancelHide();
       lastShowAt = Date.now();
       hidden = false;
+      // Slide wapas lane ke liye: pehle arrow-only hatao (dock layout me wapas, par abhi bhi hidden slide position par),
+      // phir next frame par hidden hatao, taake CSS transition translateX 120% -> 0 animate ho, achanak na aaye.
       document.body.classList.remove('arrow-only');
-      document.body.classList.remove('hidden');
+      void document.querySelector('.dock').offsetWidth;
+      requestAnimationFrame(() => { document.body.classList.remove('hidden'); });
       window.sideDock.setMouseEvents(false);
     });
   }
