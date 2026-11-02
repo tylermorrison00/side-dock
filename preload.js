@@ -19,5 +19,9 @@ contextBridge.exposeInMainWorld('sideDock', {
   launchTool: (tool) => ipcRenderer.invoke('launch-tool', tool),
   minimize: () => ipcRenderer.invoke('window-min'),
   close: () => ipcRenderer.invoke('window-close'),
-  setMouseEvents: (ignore) => ipcRenderer.invoke('set-mouse-events', ignore)
+  setMouseEvents: (ignore) => ipcRenderer.invoke('set-mouse-events', ignore),
+  getTodos: () => ipcRenderer.invoke('get-todos'),
+  addTodo: (text) => ipcRenderer.invoke('add-todo', text),
+  toggleTodo: (id) => ipcRenderer.invoke('toggle-todo', id),
+  deleteTodo: (id) => ipcRenderer.invoke('delete-todo', id)
 });

@@ -167,6 +167,18 @@
     </div>
   </div>
 
+  <div id="toolView" style="display:none; flex-direction:column; gap:12px; flex:1; overflow-y:auto;">
+    <div class="add" style="display:flex; gap:8px;">
+      <input id="panelTodoInput" placeholder="Add a new task..." style="flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px;">
+      <button class="btn primary" id="panelAddBtn" style="width:auto; padding:10px 16px;">Add</button>
+    </div>
+    <div id="panelTodoList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
+      <div id="panelToolDesc" style="font-size:13px; color:var(--muted); word-break:break-word;"></div>
+      <button class="btn primary" id="panelOpenToolBtn"><span>Open</span></button>
+    </div>
+  </div>
+
   <div class="tool-list" id="toolList"></div>
 
   <div class="form" id="addForm">
@@ -226,17 +238,75 @@
       rb.innerHTML = `<span class="icon">${tool.icon || '◆'}</span>`;
       rb.addEventListener('click', async () => {
         await openPanel();
+        showToolView(tool);
       });
       railList.appendChild(rb);
     });
-    document.getElementById('settingsPanel').classList.toggle('open', panelOpen);
+    if (!currentTool) document.getElementById('settingsPanel').classList.toggle('open', panelOpen);
   }
+
+  let currentTool = null;
+  function showSettingsView() {
+    document.getElementById('settingsPanel').classList.add('open');
+    document.getElementById('toolView').style.display = 'none';
+    document.getElementById('toolList').style.display = 'none';
+    document.querySelector('.brand-name').textContent = 'Side Dock';
+    const logoEl = document.querySelector('.brand .logo');
+    logoEl.innerHTML = '<img id="logoImg" src="../assets/icon-orange-dark.png" alt="Side Dock">';
+    applyTheme();
+  }
+  function showToolView(tool) {
+    currentTool = tool;
+    document.getElementById('settingsPanel').classList.remove('open');
+    document.getElementById('toolList').style.display = 'none';
+    document.querySelector('.brand-name').textContent = tool.name;
+    const logoEl = document.querySelector('.brand .logo');
+    logoEl.innerHTML = `<span style="font-size:20px; display:grid; place-items:center; width:100%; height:100%;">${tool.icon || '◆'}</span>`;
+    const tv = document.getElementById('toolView');
+    tv.style.display = 'flex';
+    if (tool.id === 'todo-list' || tool.target === 'todo') {
+      document.querySelector('#toolView .add').style.display = 'flex';
+      document.getElementById('panelToolOpen').style.display = 'none';
+      renderPanelTodos();
+    } else {
+      document.querySelector('#toolView .add').style.display = 'none';
+      document.getElementById('panelTodoList').innerHTML = '';
+      const po = document.getElementById('panelToolOpen');
+      po.style.display = 'flex';
+      document.getElementById('panelToolDesc').textContent = tool.target || '';
+    }
+  }
+  async function renderPanelTodos() {
+    const todos = await window.sideDock.getTodos();
+    const listEl = document.getElementById('panelTodoList');
+    listEl.innerHTML = '';
+    if (!todos.length) { listEl.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px 10px; font-size:14px;">No tasks yet. Add your first task above.</div>'; return; }
+    todos.forEach(todo => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--panel); border:1px solid var(--line);';
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = todo.done; cb.style.cssText = 'width:18px; height:18px; accent-color:#ff7a1a; cursor:pointer; flex-shrink:0;';
+      cb.addEventListener('change', async () => { await window.sideDock.toggleTodo(todo.id); renderPanelTodos(); });
+      const span = document.createElement('span'); span.textContent = todo.text; span.style.cssText = 'flex:1; font-size:14px; word-break:break-word;' + (todo.done ? ' text-decoration:line-through; opacity:0.5;' : '');
+      const del = document.createElement('button'); del.textContent = '✕'; del.style.cssText = 'background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;';
+      del.addEventListener('click', async () => { await window.sideDock.deleteTodo(todo.id); renderPanelTodos(); });
+      div.append(cb, span, del); listEl.appendChild(div);
+    });
+  }
+  document.getElementById('panelAddBtn').addEventListener('click', async () => {
+    const inp = document.getElementById('panelTodoInput');
+    const text = inp.value.trim(); if (!text) return;
+    await window.sideDock.addTodo(text); inp.value = ''; renderPanelTodos();
+  });
+  document.getElementById('panelTodoInput').addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') { const inp = e.target; const text = inp.value.trim(); if (!text) return; await window.sideDock.addTodo(text); inp.value = ''; renderPanelTodos(); }
+  });
+  document.getElementById('panelOpenToolBtn').addEventListener('click', () => { if (currentTool) window.sideDock.launchTool(currentTool); });
 
   async function openPanel() {
     if (!panelOpen) { panelOpen = await window.sideDock.setPanel(true); render(); }
   }
   async function closePanel() {
-    if (panelOpen) { panelOpen = await window.sideDock.setPanel(false); render(); }
+    if (panelOpen) { panelOpen = await window.sideDock.setPanel(false); currentTool = null; render(); }
   }
   async function togglePanel() {
     panelOpen = await window.sideDock.setPanel(!panelOpen); render();
@@ -261,7 +331,7 @@
     applyTheme();
   });
   document.getElementById('closePanelBtn').addEventListener('click', async () => { await closePanel(); });
-  document.getElementById('railSettingsBtn').addEventListener('click', async () => { await togglePanel(); });
+  document.getElementById('railSettingsBtn').addEventListener('click', async () => { if (panelOpen && !currentTool) { await closePanel(); } else { await openPanel(); showSettingsView(); } });
   document.getElementById('updateBtn').addEventListener('click', async () => {
     const status = document.getElementById('updateStatus');
     status.textContent = 'Checking for update, please wait...';
