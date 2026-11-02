@@ -29,12 +29,13 @@
   }
   .liquidGlass-effect {
     position: absolute; z-index: 0; inset: 0;
+    background: radial-gradient(120% 50% at 20% 0%, rgba(255,255,255,.28), transparent 55%), linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 46%, rgba(255,255,255,.04) 56%, transparent 70%);
     backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
     filter: url(#glass-distortion); overflow: hidden;
   }
   .liquidGlass-tint {
     z-index: 1; position: absolute; inset: 0;
-    background: rgba(255,255,255,.50);
+    background: rgba(255,255,255,.18);
   }
   .liquidGlass-shine {
     position: absolute; inset: 0; z-index: 2; overflow: hidden;
