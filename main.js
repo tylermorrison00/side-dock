@@ -164,27 +164,21 @@ function slideToHidden(next) {
   hidden = !!next;
   const area = screen.getPrimaryDisplay().workArea;
   const s = cardSize();
-  const targetX = hidden ? (area.x + area.width - 20) : s.x;
-  if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
-  if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
-  try { if (arrowWin && !hidden) arrowWin.hide(); } catch {}
-  const startX = win.getPosition()[0];
-  // Smooth slide: 16 steps, 10ms each = ~160ms, ease-out. Arrow tabdeel sirf end par,
-  // taake slide beech me na toote aur aadha na reh jaye.
-  const steps = 16;
-  let i = 0;
-  slideTimer = setInterval(() => {
-    i++;
-    const prog = 1 - Math.pow(1 - i / steps, 2);
-    const x = Math.round(startX + (targetX - startX) * prog);
-    try { win.setPosition(x, s.y); } catch {}
-    if (i >= steps) {
-      clearInterval(slideTimer); slideTimer = null;
-      try { win.setPosition(targetX, s.y); } catch {}
-      try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-      try { if (arrowWin) { if (hidden) { arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(arrowHtml())); arrowWin.showInactive(); arrowWin.moveTop(); } else arrowWin.hide(); } } catch {}
+  // ATOMIC, no animation steps: ek hi setPosition, is liye aadha rukna namumkin hai.
+  // Hidden: window ka left edge screen ke right edge se 24px andar, taake sirf arrow dikhe.
+  // Visible: window poori cardSize x par, taake settings gear aur bottom buttons poore dikhen.
+  const targetX = hidden ? (area.x + area.width - 24) : s.x;
+  try { win.setPosition(targetX, s.y); } catch {}
+  try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
+  try {
+    if (arrowWin) {
+      if (hidden) {
+        // Arrow ko main window ke bilkul bahar, right edge par rakho, taake main window usko aadha na dhake.
+        arrowWin.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
+        arrowWin.showInactive(); arrowWin.moveTop();
+      } else arrowWin.hide();
     }
-  }, 10);
+  } catch {}
 }
 
 let mousePollTimer = null;
@@ -207,7 +201,7 @@ function startMousePoll() {
         try { win.webContents.send('auto-hide-hide'); } catch {}
       }
     } catch {}
-  }, 500);
+  }, 1000);
 }
 function arrowHtml() {
   const light = theme === 'light';
