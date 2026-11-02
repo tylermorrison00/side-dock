@@ -117,6 +117,28 @@ function saveTools(tools) {
   fs.writeFileSync(toolsPath, JSON.stringify(tools, null, 2));
 }
 
+function startupShortcutPath() {
+  return path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', 'Side Dock.lnk');
+}
+async function applyAutostart() {
+  // Unpackaged app ka setLoginItemSettings sirf electron.exe kholta hai,
+  // is liye wo default Electron window dikhata hai, sidebar nahi.
+  // Is liye auto-start Startup folder ki shortcut se hota hai jo
+  // launch.vbs chalati hai, aur wo npm start chhup kar chalata hai.
+  if (process.platform !== 'win32') return;
+  try { app.setLoginItemSettings({ openAtLogin: false }); } catch {}
+  const lnk = startupShortcutPath();
+  const vbs = path.join(__dirname, 'launch.vbs');
+  if (!autoStart) { try { fs.unlinkSync(lnk); } catch {} return; }
+  if (!fs.existsSync(vbs)) return;
+  try {
+    const ps1 = path.join(os.tmpdir(), 'sidedock-startup.ps1');
+    const ps = `$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('${lnk.replace(/'/g, "''")}'); $Shortcut.TargetPath = '${vbs.replace(/'/g, "''")}'; $Shortcut.WorkingDirectory = '${__dirname.replace(/'/g, "''")}'; $Shortcut.IconLocation = '${path.join(__dirname, 'build', 'icon.ico').replace(/'/g, "''")}'; $Shortcut.Save()`;
+    fs.writeFileSync(ps1, ps);
+    await runCmd(`powershell -NoProfile -ExecutionPolicy Bypass -File "${ps1}"`, __dirname);
+  } catch {}
+}
+
 function dockWindow() {
   if (!win) return;
   const area = screen.getPrimaryDisplay().workArea;
@@ -132,8 +154,8 @@ function createWindow() {
   loadSettings();
   const area = screen.getPrimaryDisplay().workArea;
   const { width } = windowSize();
-  // Windows login par auto-start: laptop on hote hi app khud chalega.
-  try { app.setLoginItemSettings({ openAtLogin: autoStart }); } catch {}
+  // Windows login par auto-start: Startup shortcut se, electron.exe seedha nahi.
+  applyAutostart();
   win = new BrowserWindow({
     width,
     height: area.height,
@@ -167,10 +189,10 @@ ipcMain.handle('clear-github-token', () => {
   try { fs.unlinkSync(tokenPath); } catch {}
   return true;
 });
-ipcMain.handle('set-autostart', (_e, next) => {
+ipcMain.handle('set-autostart', async (_e, next) => {
   autoStart = !!next;
   saveSettings();
-  try { app.setLoginItemSettings({ openAtLogin: autoStart }); } catch {}
+  await applyAutostart();
   return autoStart;
 });
 ipcMain.handle('set-mode', (_e, next) => {
@@ -205,7 +227,7 @@ ipcMain.handle('do-update', async () => {
     let localVersion = '';
     try { localVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version || ''; } catch {}
     const token = loadToken();
-    const remote = JSON.parse(await fetchText(UPDATE_RAW, token));
+    const remote = JSON.parse(await fetchText(UPDATE_RAW + '?t=' + Date.now(), token));
     if (remote.version && remote.version === localVersion) {
       return { ok: true, updated: false, version: localVersion, message: 'App pehle se latest hai.' };
     }
@@ -214,8 +236,14 @@ ipcMain.handle('do-update', async () => {
     const extractDir = path.join(tmpDir, 'extracted');
     await downloadFile(UPDATE_ZIP_API, zipPath, token);
     await runCmd(`powershell -NoProfile -Command "Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${extractDir}'"`, tmpDir);
-    const srcDir = path.join(extractDir, 'side-dock-main');
-    if (!fs.existsSync(path.join(srcDir, 'package.json'))) throw new Error('Update zip me app files nahi mili.');
+    // Zipball ka folder naam owner-repo-sha hota hai, side-dock-main nahi.
+    // Is liye pehla folder dhoondo jis me package.json ho.
+    let srcDir = '';
+    for (const entry of fs.readdirSync(extractDir)) {
+      const cand = path.join(extractDir, entry);
+      try { if (fs.statSync(cand).isDirectory() && fs.existsSync(path.join(cand, 'package.json'))) { srcDir = cand; break; } } catch {}
+    }
+    if (!srcDir) throw new Error('Update zip me app files nahi mili.');
     // node_modules, .git aur dist ko chhero mat — baqi sab nayi files se replace karo.
     for (const entry of fs.readdirSync(srcDir)) {
       if (['node_modules', '.git', 'dist'].includes(entry)) continue;
@@ -229,10 +257,7 @@ ipcMain.handle('do-update', async () => {
   } catch (e) {
     const msg = String(e.message || e);
     if (msg.includes('401') || msg.includes('403') || msg.includes('404')) {
-      if (!loadToken()) {
-        return { ok: false, message: 'Private repo update ke liye GitHub token chahiye — neeche GitHub token me token paste karke Save karo, phir Update dabao.' };
-      }
-      return { ok: false, message: 'Token ghalat ya expire ho gaya, ya is repo par access nahi — naya read-only token banao aur dobara save karo.' };
+      return { ok: false, message: 'Repo tak rasai nahi ho rahi, thodi der baad dobara Update dabao.' };
     }
     return { ok: false, message: 'Update nahi ho saka: ' + msg };
   }
