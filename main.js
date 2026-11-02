@@ -85,6 +85,8 @@ let win = null;
 let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
 let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
+let hidden = false; // auto-hide: true = sirf arrow dikhta hai, sidebar side se bahar hai
+let slideTimer = null;
 let settingsPath = '';
 let toolsPath = '';
 
@@ -155,6 +157,23 @@ function dockWindow() {
   win.setSize(s.width, s.height);
   win.setPosition(s.x, s.y);
 }
+function slideToHidden(next) {
+  if (!win) return;
+  hidden = !!next;
+  const area = screen.getPrimaryDisplay().workArea;
+  const s = cardSize();
+  const targetX = hidden ? (area.x + area.width - 20) : s.x;
+  if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+  const startX = win.getPosition()[0];
+  const steps = 10;
+  let i = 0;
+  slideTimer = setInterval(() => {
+    i++;
+    const x = Math.round(startX + (targetX - startX) * (i / steps));
+    try { win.setPosition(x, s.y); } catch {}
+    if (i >= steps) { clearInterval(slideTimer); slideTimer = null; try { win.setPosition(targetX, s.y); } catch {} }
+  }, 12);
+}
 
 function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
@@ -196,7 +215,11 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, autoStart, theme, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, theme, hidden, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('set-hidden', (_e, next) => {
+  slideToHidden(next);
+  return hidden;
+});
 ipcMain.handle('set-theme', (_e, next) => {
   theme = next === 'light' ? 'light' : 'dark';
   saveSettings();

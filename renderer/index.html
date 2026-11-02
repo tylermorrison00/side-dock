@@ -111,9 +111,21 @@
   body.collapsed .tool:hover::after { content: attr(data-name); }
   body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
+  /* Auto-hide arrow: sirf hidden hone par center me dikhta hai, baqi waqt chhupa rehta hai. */
+  #hideTab {
+    display: none; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 20px; height: 64px; z-index: 100; cursor: pointer;
+    background: var(--bg); border: 1px solid var(--line); border-left: 0;
+    border-radius: 0 12px 12px 0; color: var(--accent); font-size: 16px; font-weight: 800;
+    align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  body.hidden #hideTab { display: grid; }
+  body.hidden .dock { visibility: hidden; }
 </style>
 </head>
 <body>
+<div id="hideTab">◀</div>
 <div class="dock">
   <div class="topbar">
     <div class="brand">
@@ -241,8 +253,30 @@
   });
 
   const dockEl = document.querySelector('.dock');
-  dockEl.addEventListener('mouseenter', () => window.sideDock.setMouseEvents(false));
-  dockEl.addEventListener('mouseleave', () => window.sideDock.setMouseEvents(true));
+  let hidden = false;
+  let hideTimer = null;
+  function setHiddenState(next) {
+    if (hidden === next) return;
+    hidden = next;
+    document.body.classList.toggle('hidden', hidden);
+    window.sideDock.setHidden(hidden);
+    // Hidden ho to arrow par mouse lagna chahiye, is liye mouse events band nahi.
+    // Visible ho to bhi mouse events khule rakho, taake dock use ho sake.
+    window.sideDock.setMouseEvents(false);
+  }
+  function scheduleHide() {
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => setHiddenState(true), 800);
+  }
+  function cancelHide() {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+  }
+  dockEl.addEventListener('mouseenter', () => { cancelHide(); window.sideDock.setMouseEvents(false); });
+  dockEl.addEventListener('mouseleave', () => {
+    if (mode === 'collapsed') window.sideDock.setMouseEvents(true);
+    scheduleHide();
+  });
+  document.getElementById('hideTab').addEventListener('mouseenter', () => { cancelHide(); setHiddenState(false); });
   window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
