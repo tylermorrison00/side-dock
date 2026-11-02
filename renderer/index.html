@@ -31,7 +31,7 @@
     background: linear-gradient(135deg, #0f2a4a, #0b152e); border: 1px solid var(--line);
     display: grid; place-items: center; font-size: 16px; color: var(--cyan);
   }
-  .brand-name { font-weight: 800; font-size: 18px; white-space: nowrap; }
+  .brand-name { font-weight: 800; font-size: 18px; white-space: nowrap; line-height: 30px; }
   .brand-sub { font-size: 11px; color: var(--muted); white-space: nowrap; }
   .top-actions { display: flex; gap: 6px; -webkit-app-region: no-drag; }
   .winbtns { display: flex; gap: 6px; }
@@ -56,8 +56,8 @@
   .tool:hover .del { display: block; }
   .footer { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .btn {
-    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 8px 12px;
-    border-radius: 11px; border: 1px solid var(--line); background: var(--panel);
+    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 6px 12px;
+    border-radius: 10px; border: 1px solid var(--line); background: var(--panel);
     color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
   }
   .btn.primary { background: #12351f; border-color: #1e7d4d; color: #b9f5d3; }
@@ -106,7 +106,7 @@
   <div class="topbar">
     <div class="brand">
       <div class="logo">⚡</div>
-      <div><div class="brand-name">Side Dock</div><div class="brand-sub">Premium dock</div></div>
+      <div class="brand-name">Side Dock</div>
     </div>
     <div class="top-actions">
       <button class="settings-btn" id="settingsBtn" title="Settings" data-tip="Settings">⚙</button>
