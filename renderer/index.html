@@ -15,6 +15,7 @@
     background: transparent; color: var(--text);
     font-family: Inter, Segoe UI, system-ui, sans-serif;
     overflow: hidden; user-select: none;
+    display: flex; justify-content: flex-end;
   }
   .dock {
     height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
@@ -22,7 +23,7 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.45);
     transition: width .18s ease;
   }
-  body.collapsed .dock { width: 76px; margin-left: auto; padding: 14px 8px; align-items: center; }
+  body.collapsed .dock { width: 76px; padding: 14px 8px; align-items: center; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
