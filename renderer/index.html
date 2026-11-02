@@ -26,8 +26,10 @@
     --text: #ffffff; --muted: rgba(255, 255, 255, 0.70); --green: #2fe07a; --cyan: #ff7a1a;
     --accent: #ff7a1a;
   }
-  body.glass .dock { background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05) 35%, rgba(20,20,25,0.55) 70%, rgba(40,42,48,0.55)); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35); }
-  body.glass.collapsed .dock { box-shadow: 0 10px 20px rgba(0,0,0,0.30); background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05) 35%, rgba(20,20,25,0.55) 70%, rgba(40,42,48,0.55)); }
+  body.glass .dock { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9), inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9), inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55), inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55), inset 0 0 2px rgba(0, 0, 0, 0.8), 0 8px 32px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; }
+  body.glass .dock::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent); }
+  body.glass .dock::after { content: ''; position: absolute; top: 0; left: 0; width: 1px; height: 100%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3)); }
+  body.glass.collapsed .dock { box-shadow: 0 10px 20px rgba(0,0,0,0.30); background: rgba(255, 255, 255, 0.05); border-radius: 18px; }
   body.glass .logo { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); }
   body.glass .tool .icon { background: rgba(255, 255, 255, 0.08); }
   body.glass .btn.primary { background: #ff7a1a; border-color: #ff7a1a; color: #ffffff; }
