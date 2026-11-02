@@ -177,8 +177,11 @@ function slideToHidden(next) {
     hideTimeout = setTimeout(() => {
       try {
         win.setResizable(true);
-        // Ek hi setBounds call: size aur position ek sath, taake window pehle upar chota na ho, phir center me jump na kare.
-        win.setBounds({ x: area.x + area.width - 28, y: area.y + Math.round((area.height - 64) / 2), width: 24, height: 64 }, true);
+        // Windows DWM window resize ko animate karke dikhata hai, is liye chota hote dikhta tha.
+        // Is liye resize ke waqt window ko chhupao, phir size badlo, phir dikhao - resize animation kabhi nazar nahi aayega, sirf arrow center me dikhega.
+        win.hide();
+        win.setBounds({ x: area.x + area.width - 28, y: area.y + Math.round((area.height - 64) / 2), width: 24, height: 64 }, false);
+        win.show();
         win.setIgnoreMouseEvents(false, { forward: true });
         updateBackgroundMaterial();
       } catch {}
