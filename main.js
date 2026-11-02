@@ -229,7 +229,13 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  win.on('closed', () => { win = null; });
+  win.on('closed', () => {
+    win = null;
+    // Main window band ho to arrow window bhi band karo, warna app background me
+    // zinda rehta hai, dobara kholne par single-instance lock ki wajah se kuch nahi khulta.
+    try { if (arrowWin && !arrowWin.isDestroyed()) arrowWin.close(); } catch {}
+    arrowWin = null;
+  });
   createArrowWindow();
 }
 
@@ -239,6 +245,7 @@ if (!gotLock) {
 } else {
   app.on('second-instance', () => {
     if (win) { try { win.show(); win.focus(); } catch {} }
+    else { try { createWindow(); } catch {} }
   });
 }
 app.whenReady().then(createWindow);
