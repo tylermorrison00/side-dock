@@ -196,12 +196,13 @@
     tools.forEach(tool => {
       const b = document.createElement('button');
       b.className = 'tool'; b.dataset.name = tool.name;
-      b.innerHTML = `<span class="icon">${tool.icon || '◆'}</span><span class="name">${tool.name}</span><span class="del" title="Remove">✕</span>`;
+      b.innerHTML = `<span class="icon">${tool.icon || '◆'}</span><span class="name">${tool.name}</span>${tool.id === 'todo-list' ? '' : '<span class="del" title="Remove">✕</span>'}`;
       b.addEventListener('click', (e) => {
         if (e.target.classList.contains('del')) return;
         window.sideDock.launchTool(tool);
       });
-      b.querySelector('.del').addEventListener('click', async () => {
+      const delEl = b.querySelector('.del');
+      if (delEl) delEl.addEventListener('click', async () => {
         tools = await window.sideDock.removeTool(tool.id); render();
       });
       list.appendChild(b);
