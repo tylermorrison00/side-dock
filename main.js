@@ -160,21 +160,52 @@ function dockWindow() {
 function slideToHidden(next) {
   if (!win) return;
   hidden = !!next;
+  // Arrow window: hidden ho to dikhao, visible ho to chhupao.
+  try { if (arrowWin) { if (hidden) arrowWin.show(); else arrowWin.hide(); } } catch {}
   const area = screen.getPrimaryDisplay().workArea;
   const s = cardSize();
   const targetX = hidden ? (area.x + area.width - 20) : s.x;
   if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
   const startX = win.getPosition()[0];
+  // Hidden hone par window ko sirf arrow tak bahar le jao, aur click-through ON rakho
+  // taake peeche wali window ke button block na hon. Sirf arrow wala hissa click lega,
+  // wo alag chhoti window se handle hoga, is liye yahan ignore ON hai.
+  try { win.setIgnoreMouseEvents(true, { forward: true }); } catch {}
   const steps = 10;
   let i = 0;
   slideTimer = setInterval(() => {
     i++;
     const x = Math.round(startX + (targetX - startX) * (i / steps));
     try { win.setPosition(x, s.y); } catch {}
-    if (i >= steps) { clearInterval(slideTimer); slideTimer = null; try { win.setPosition(targetX, s.y); } catch {} }
+    if (i >= steps) {
+      clearInterval(slideTimer); slideTimer = null;
+      try { win.setPosition(targetX, s.y); } catch {}
+      // Slide khatam hone ke baad bhi ignore ON rakho jab hidden hai,
+      // visible hone par renderer dobara OFF karega.
+      if (hidden) { try { win.setIgnoreMouseEvents(true, { forward: true }); } catch {} }
+    }
   }, 12);
 }
 
+let arrowWin = null;
+function createArrowWindow() {
+  if (arrowWin) return;
+  const area = screen.getPrimaryDisplay().workArea;
+  const w = 20, h = 64;
+  arrowWin = new BrowserWindow({
+    width: w, height: h,
+    x: area.x + area.width - w, y: area.y + Math.round((area.height - h) / 2),
+    frame: false, transparent: true, backgroundColor: '#00000000',
+    resizable: false, minimizable: false, maximizable: false,
+    alwaysOnTop: true, skipTaskbar: true, focusable: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+  });
+  arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
+    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>document.getElementById("a").addEventListener("mouseenter",()=>window.sideDock.showFromArrow());</script></body></html>'
+  ));
+  arrowWin.on('closed', () => { arrowWin = null; });
+  arrowWin.hide();
+}
 function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   toolsPath = path.join(app.getPath('userData'), 'tools.json');
@@ -201,6 +232,7 @@ function createWindow() {
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   win.on('closed', () => { win = null; });
+  createArrowWindow();
 }
 
 const gotLock = app.requestSingleInstanceLock();
@@ -218,6 +250,11 @@ app.on('activate', () => { if (!win) createWindow(); });
 ipcMain.handle('get-state', () => ({ mode, autoStart, theme, hidden, hasToken: !!loadToken(), tools: loadTools() }));
 ipcMain.handle('set-hidden', (_e, next) => {
   slideToHidden(next);
+  return hidden;
+});
+ipcMain.handle('show-from-arrow', () => {
+  slideToHidden(false);
+  try { if (win) win.webContents.send('auto-hide-show'); } catch {}
   return hidden;
 });
 ipcMain.handle('set-theme', (_e, next) => {

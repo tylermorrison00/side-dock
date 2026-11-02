@@ -111,21 +111,12 @@
   body.collapsed .tool:hover::after { content: attr(data-name); }
   body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
-  /* Auto-hide arrow: sirf hidden hone par center me dikhta hai, baqi waqt chhupa rehta hai. */
-  #hideTab {
-    display: none; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 20px; height: 64px; z-index: 100; cursor: pointer;
-    background: var(--bg); border: 1px solid var(--line); border-left: 0;
-    border-radius: 0 12px 12px 0; color: var(--accent); font-size: 16px; font-weight: 800;
-    align-items: center; justify-content: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,.45);
-  }
-  body.hidden #hideTab { display: grid; }
+  /* Auto-hide: hidden hone par dock chhupa rehta hai, arrow alag chhoti window me dikhta hai,
+     taake main window click-through ho aur peeche wali window ke button block na hon. */
   body.hidden .dock { visibility: hidden; }
 </style>
 </head>
 <body>
-<div id="hideTab">◀</div>
 <div class="dock">
   <div class="topbar">
     <div class="brand">
@@ -260,9 +251,18 @@
     hidden = next;
     document.body.classList.toggle('hidden', hidden);
     window.sideDock.setHidden(hidden);
-    // Hidden ho to arrow par mouse lagna chahiye, is liye mouse events band nahi.
-    // Visible ho to bhi mouse events khule rakho, taake dock use ho sake.
-    window.sideDock.setMouseEvents(false);
+    // Hidden ho to main window click-through rehti hai (main.js me ignore ON),
+    // taake peeche wali window ke button block na hon. Arrow alag window hai.
+    if (!hidden) window.sideDock.setMouseEvents(false);
+  }
+  // Arrow window se show hone par renderer ka hidden flag bhi sync karo,
+  // warna window wapas aa jayegi par dock chhupa hi rahega.
+  if (window.sideDock.onAutoHideShow) {
+    window.sideDock.onAutoHideShow(() => {
+      hidden = false;
+      document.body.classList.remove('hidden');
+      window.sideDock.setMouseEvents(false);
+    });
   }
   function scheduleHide() {
     if (hideTimer) clearTimeout(hideTimer);
@@ -276,7 +276,6 @@
     if (mode === 'collapsed') window.sideDock.setMouseEvents(true);
     scheduleHide();
   });
-  document.getElementById('hideTab').addEventListener('mouseenter', () => { cancelHide(); setHiddenState(false); });
   window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
