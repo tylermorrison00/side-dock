@@ -31,7 +31,7 @@
     height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
     background: var(--bg); border: 1px solid var(--line); border-radius: 24px 24px 24px 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,.60);
-    transition: width .30s ease, transform .30s ease, opacity .30s ease;
+    transition: transform .30s ease, opacity .30s ease;
   }
   body.hidden .dock { transform: translateX(120%); opacity: 0; pointer-events: none; }
   body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
@@ -289,7 +289,7 @@
       hidden = true;
       document.body.classList.add('hidden');
       // Slide khatam hone ke baad dock ko layout se hatao, taake arrow grid me bilkul center me aaye, neeche ya upar nahi.
-      setTimeout(() => { if (hidden) document.body.classList.add('arrow-only'); }, 200);
+      setTimeout(() => { if (hidden) document.body.classList.add('arrow-only'); }, 320);
     });
   }
   if (window.sideDock.onAutoHideShow) {
