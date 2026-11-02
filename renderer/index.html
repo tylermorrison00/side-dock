@@ -226,7 +226,6 @@
       rb.innerHTML = `<span class="icon">${tool.icon || '◆'}</span>`;
       rb.addEventListener('click', async () => {
         await openPanel();
-        window.sideDock.launchTool(tool);
       });
       railList.appendChild(rb);
     });
