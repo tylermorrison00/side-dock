@@ -211,11 +211,10 @@ ipcMain.handle('set-autostart', async (_e, next) => {
 ipcMain.handle('set-mode', (_e, next) => {
   mode = next === 'collapsed' ? 'collapsed' : 'expanded';
   saveSettings();
-  dockWindow();
-  // Windows par transparent window resize ke baad content kabhi blank reh
-  // jata hai, is liye size badalne ke baad page dobara load karo taake
-  // nayi size par saaf paint ho.
-  try { if (win) win.webContents.reloadIgnoringCache(); } catch {}
+  // Windows par maujooda window ka size badalne se dobara collapse par
+  // content blank ho jata hai, is liye purani window band karke nayi
+  // window nayi size me kholo, taake har mode me saaf paint ho.
+  setTimeout(() => { try { app.relaunch(); app.quit(); } catch {} }, 200);
   return mode;
 });
 ipcMain.handle('add-tool', (_e, tool) => {
