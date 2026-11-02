@@ -25,8 +25,21 @@
     background: transparent; color: var(--text);
     font-family: Inter, Segoe UI, system-ui, sans-serif;
     overflow: hidden; user-select: none;
-    display: flex; justify-content: flex-end;
+    display: flex; justify-content: flex-end; gap: 8px;
   }
+  #rail { width: 56px; height: 100%; flex: 0 0 56px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.60); }
+  #rail .logo { width: 32px; height: 32px; flex: 0 0 32px; }
+  #railTools { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; overflow-y: auto; width: 100%; }
+  #railTools .tool { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  #railTools .tool .icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; font-size: 16px; }
+  #railTools .tool .name, #railTools .tool .del { display: none !important; }
+  #rail .settings-btn { width: 32px; height: 32px; border-radius: 10px; font-size: 15px; }
+  #rail .tool:hover::after, #rail .settings-btn:hover::after { content: attr(data-name); position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 50; background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  #rail .settings-btn:hover::after { content: attr(data-tip); }
+  body:not(.panel-open) .dock { display: none !important; }
+  body.panel-open .dock { display: flex !important; width: 220px; flex: 0 0 220px; }
+  body.hidden #rail { opacity: 0; pointer-events: none; transform: translateX(120%); transition: transform .30s ease, opacity .30s ease; }
+  body.arrow-only #rail { display: none !important; }
   .dock {
     height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
     background: var(--bg); border: 1px solid var(--line); border-radius: 24px 24px 24px 24px;
@@ -133,7 +146,7 @@
       <div class="brand-name">Side Dock</div>
     </div>
     <div class="top-actions">
-      <button class="settings-btn" id="settingsBtn" title="Settings" data-tip="Settings">⚙</button>
+      <button class="settings-btn" id="closePanelBtn" title="Close panel">✕</button>
     </div>
   </div>
 
@@ -165,13 +178,16 @@
     <button class="btn primary" id="saveTool"><span class="ic">✓</span><span>Save tool</span></button>
   </div>
 
-  <div class="footer">
-    <button class="btn" id="collapseBtn" data-tip="Expand Sidebar"><span class="ic" id="collapseIc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg></span><span class="collapse-label">Collapse Sidebar</span></button>
-  </div>
+</div>
+<div id="rail">
+  <div class="logo"><img id="railLogoImg" src="../assets/icon-orange-dark.png" alt="Side Dock" onerror="this.style.display='none';"></div>
+  <div id="railTools"></div>
+  <button class="settings-btn" id="railSettingsBtn" title="Settings" data-tip="Settings">⚙</button>
 </div>
 
 <script>
-  let mode = 'expanded';
+  let mode = 'collapsed';
+  let panelOpen = false;
   let autoStart = true;
   let theme = 'dark';
   let autoHide = false;
@@ -182,16 +198,15 @@
     if (tb) tb.textContent = theme === 'light' ? 'Light' : 'Dark';
     const li = document.getElementById('logoImg');
     if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
+    const rli = document.getElementById('railLogoImg');
+    if (rli) rli.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
   }
   const list = document.getElementById('toolList');
 
   function render() {
-    document.body.classList.toggle('collapsed', mode === 'collapsed');
-    document.getElementById('collapseIc').innerHTML = mode === 'collapsed'
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m8 15 3-3-3-3"/></svg>'
-      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>';
-    document.querySelector('#collapseBtn .collapse-label').textContent = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
-    document.getElementById('collapseBtn').dataset.tip = mode === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar';
+    document.body.classList.toggle('panel-open', panelOpen);
+    const railList = document.getElementById('railTools');
+    railList.querySelectorAll('.tool').forEach(el => el.remove());
     list.querySelectorAll('.tool').forEach(el => el.remove());
     tools.forEach(tool => {
       const b = document.createElement('button');
@@ -206,15 +221,29 @@
         tools = await window.sideDock.removeTool(tool.id); render();
       });
       list.appendChild(b);
+      const rb = document.createElement('button');
+      rb.className = 'tool'; rb.dataset.name = tool.name; rb.style.position = 'relative';
+      rb.innerHTML = `<span class="icon">${tool.icon || '◆'}</span>`;
+      rb.addEventListener('click', async () => {
+        await openPanel();
+        window.sideDock.launchTool(tool);
+      });
+      railList.appendChild(rb);
     });
+    document.getElementById('settingsPanel').classList.toggle('open', panelOpen);
   }
 
-  async function ensureExpanded() {
-    if (mode === 'collapsed') {
-      mode = await window.sideDock.setMode('expanded');
-      render();
-    }
+  async function openPanel() {
+    if (!panelOpen) { panelOpen = await window.sideDock.setPanel(true); render(); }
   }
+  async function closePanel() {
+    if (panelOpen) { panelOpen = await window.sideDock.setPanel(false); render(); }
+  }
+  async function togglePanel() {
+    panelOpen = await window.sideDock.setPanel(!panelOpen); render();
+  }
+
+  async function ensureExpanded() { await openPanel(); }
 
   document.getElementById('autoBtn').addEventListener('click', async () => {
     autoStart = await window.sideDock.setAutostart(!autoStart);
@@ -232,23 +261,16 @@
     theme = await window.sideDock.setTheme(theme === 'light' ? 'dark' : 'light');
     applyTheme();
   });
-  document.getElementById('settingsBtn').addEventListener('click', async () => {
-    await ensureExpanded();
-    document.getElementById('settingsPanel').classList.toggle('open');
-    document.getElementById('updateStatus').textContent = '';
-  });
+  document.getElementById('closePanelBtn').addEventListener('click', async () => { await closePanel(); });
+  document.getElementById('railSettingsBtn').addEventListener('click', async () => { await togglePanel(); });
   document.getElementById('updateBtn').addEventListener('click', async () => {
     const status = document.getElementById('updateStatus');
     status.textContent = 'Checking for update, please wait...';
     const result = await window.sideDock.doUpdate();
     status.textContent = result.message || '';
   });
-  document.getElementById('collapseBtn').addEventListener('click', async () => {
-    mode = await window.sideDock.setMode(mode === 'collapsed' ? 'expanded' : 'collapsed');
-    render();
-  });
   if (document.getElementById('addBtn')) document.getElementById('addBtn').addEventListener('click', async () => {
-    await ensureExpanded();
+    await openPanel();
     document.getElementById('addForm').classList.toggle('open');
   });
   document.getElementById('saveTool').addEventListener('click', async () => {
@@ -321,10 +343,14 @@
   }
   dockEl.addEventListener('mouseenter', () => { cancelHide(); window.sideDock.setMouseEvents(false); });
   dockEl.addEventListener('mouseleave', () => {
-    if (mode === 'collapsed') window.sideDock.setMouseEvents(true);
-    // Hide sirf main poller se hoga, DOM mouseleave se nahi, taake race na ho.
+    if (!panelOpen) window.sideDock.setMouseEvents(true);
   });
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; autoHide = state.autoHide === true; document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
+  const railEl = document.getElementById('rail');
+  railEl.addEventListener('mouseenter', () => { cancelHide(); window.sideDock.setMouseEvents(false); });
+  railEl.addEventListener('mouseleave', () => {
+    if (!panelOpen) window.sideDock.setMouseEvents(true);
+  });
+  window.sideDock.getState().then(state => { mode = 'collapsed'; panelOpen = false; autoStart = state.autoStart !== false; theme = state.theme === 'light' ? 'light' : 'dark'; autoHide = state.autoHide === true; document.getElementById('autohideBtn').textContent = autoHide ? 'On' : 'Off'; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; applyTheme(); render(); window.sideDock.setMouseEvents(true); });
 </script>
 </body>
 </html>

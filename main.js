@@ -82,7 +82,8 @@ function runCmd(cmd, cwd) {
 }
 
 let win = null;
-let mode = 'expanded'; // 'collapsed' = icons only, 'expanded' = icons + names
+let mode = 'collapsed'; // Always collapsed rail now; expanded panel is separate, see panelOpen
+let panelOpen = false; // expanded panel beside rail, closed by default
 let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
 let hidden = false; // auto-hide: true = sirf arrow dikhta hai, sidebar side se bahar hai
@@ -99,7 +100,7 @@ function loadSettings() {
   try {
     const raw = fs.readFileSync(settingsPath, 'utf8');
     const data = JSON.parse(raw);
-    if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
+    mode = 'collapsed';
     if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
     if (data.theme === 'light' || data.theme === 'dark') theme = data.theme;
     if (typeof data.autoHide === 'boolean') autoHide = data.autoHide;
@@ -175,11 +176,10 @@ async function applyAutostart() {
 }
 
 function cardSize() {
-  // Window ka size hamesha expanded jitna rehta hai, taake collapse par
-  // window resize ya relaunch se jhatka na lage. Sirf andar wali card
-  // chhoti hoti hai, aur khali hissa click-through hota hai.
+  // Rail hamesha right edge par: panel closed = 220 wide window (56 rail + transparent left, click-through),
+  // panel open = 284 wide window (220 expanded panel + 8 gap + 56 rail), right edge hamesha fixed.
   const area = screen.getPrimaryDisplay().workArea;
-  const width = 220;
+  const width = panelOpen ? 284 : 220;
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function updateBackgroundMaterial() {
@@ -298,7 +298,7 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (!win) createWindow(); });
 
-ipcMain.handle('get-state', () => ({ mode, autoStart, theme, autoHide, hidden, hasToken: !!loadToken(), tools: loadTools() }));
+ipcMain.handle('get-state', () => ({ mode, autoStart, theme, autoHide, hidden, panelOpen, hasToken: !!loadToken(), tools: loadTools() }));
 ipcMain.handle('set-hidden', (_e, next) => {
   if (!autoHide) { hidden = false; return hidden; }
   slideToHidden(next);
@@ -334,10 +334,14 @@ ipcMain.handle('set-autostart', async (_e, next) => {
   return autoStart;
 });
 ipcMain.handle('set-mode', (_e, next) => {
-  mode = next === 'collapsed' ? 'collapsed' : 'expanded';
+  mode = 'collapsed';
   saveSettings();
-  updateBackgroundMaterial();
   return mode;
+});
+ipcMain.handle('set-panel', (_e, next) => {
+  panelOpen = !!next;
+  try { if (win && !win.isDestroyed()) { const s = cardSize(); win.setBounds({ x: s.x, y: s.y, width: s.width, height: s.height }, true); } } catch {}
+  return panelOpen;
 });
 ipcMain.handle('set-mouse-events', (_e, ignore) => {
   try { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); } catch {}
