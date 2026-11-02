@@ -241,6 +241,7 @@
       rb.className = 'tool'; rb.dataset.name = tool.name; rb.style.position = 'relative';
       rb.innerHTML = tool.logo ? `<img src="../assets/${tool.logo}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:0.85; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
       rb.addEventListener('click', async () => {
+        if (panelOpen && currentTool && currentTool.id === tool.id) { await closePanel(); return; }
         await openPanel();
         showToolView(tool);
       });
@@ -251,6 +252,7 @@
 
   let currentTool = null;
   function showSettingsView() {
+    currentTool = null;
     document.getElementById('settingsPanel').classList.add('open');
     document.getElementById('toolView').style.display = 'none';
     document.getElementById('toolList').style.display = 'none';
@@ -310,7 +312,7 @@
     if (!panelOpen) { panelOpen = await window.sideDock.setPanel(true); render(); }
   }
   async function closePanel() {
-    if (panelOpen) { panelOpen = await window.sideDock.setPanel(false); currentTool = null; render(); }
+    panelOpen = await window.sideDock.setPanel(false); currentTool = null; render();
   }
   async function togglePanel() {
     panelOpen = await window.sideDock.setPanel(!panelOpen); render();
