@@ -87,7 +87,7 @@ let autoStart = true; // laptop on hote hi Side Dock khud khul jaye
 let theme = 'dark'; // 'dark' = dark navy, 'light' = light beige
 let hidden = false; // auto-hide: true = sirf arrow dikhta hai, sidebar side se bahar hai
 let autoHide = true; // default ON: kaam karte waqt sidebar chhup jayegi, sirf arrow dikhega
-let slideTimer = null;
+let slideTimer = null; // legacy, unused in single-window version
 let settingsPath = '';
 let toolsPath = '';
 
@@ -101,7 +101,7 @@ function loadSettings() {
     const data = JSON.parse(raw);
     if (data.mode === 'collapsed' || data.mode === 'expanded') mode = data.mode;
     if (typeof data.autoStart === 'boolean') autoStart = data.autoStart;
-    if (data.theme === 'light' || data.theme === 'dark') theme = data.theme;
+    if (data.theme === 'light' || data.theme === 'dark' || data.theme === 'glass') theme = data.theme;
     if (typeof data.autoHide === 'boolean') autoHide = data.autoHide;
   } catch {}
 }
@@ -159,74 +159,54 @@ function dockWindow() {
   win.setSize(s.width, s.height);
   win.setPosition(s.x, s.y);
 }
+let launchAt = Date.now();
+let hideTimeout = null;
 function slideToHidden(next) {
   if (!win) return;
   hidden = !!next;
   const area = screen.getPrimaryDisplay().workArea;
   const s = cardSize();
-  // ATOMIC, no animation steps: ek hi setPosition, is liye aadha rukna namumkin hai.
-  // Hidden: window ka left edge screen ke right edge se 24px andar, taake sirf arrow dikhe.
-  // Visible: window poori cardSize x par, taake settings gear aur bottom buttons poore dikhen.
-  const targetX = hidden ? (area.x + area.width - 24) : s.x;
-  try { win.setPosition(targetX, s.y); } catch {}
-  try { win.setIgnoreMouseEvents(hidden, { forward: true }); } catch {}
-  try {
-    if (arrowWin) {
-      if (hidden) {
-        // Arrow ko main window ke bilkul bahar, right edge par rakho, taake main window usko aadha na dhake.
-        arrowWin.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
-        arrowWin.showInactive(); arrowWin.moveTop();
-      } else arrowWin.hide();
-    }
-  } catch {}
+  if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
+  if (hidden) {
+    // Step 1: renderer ko hidden class do, dock CSS slide se bahar jayega (180ms, hamesha target par settle hota hai)
+    try { win.webContents.send('auto-hide-hide'); } catch {}
+    // Step 2: slide khatam hone ke baad window ko sirf arrow size par le jao, taake koi full-height strip, shadow ya click-block na rahe.
+    hideTimeout = setTimeout(() => {
+      try {
+        win.setSize(24, 64);
+        win.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
+        win.setIgnoreMouseEvents(false, { forward: true });
+      } catch {}
+    }, 200);
+  } else {
+    // Show: pehle window ko poori size par wapas lao, phir renderer ko show kaho, dock CSS slide se andar aayega.
+    try {
+      win.setSize(s.width, s.height);
+      win.setPosition(s.x, s.y);
+      win.setIgnoreMouseEvents(false, { forward: true });
+      win.webContents.send('auto-hide-show');
+    } catch {}
+  }
 }
-
 let mousePollTimer = null;
+let outsideCount = 0;
 function startMousePoll() {
   if (mousePollTimer) return;
   mousePollTimer = setInterval(() => {
     try {
       if (!win || win.isDestroyed()) return;
-      if (!autoHide || hidden) return;
-      if (slideTimer) return;
+      if (!autoHide || hidden) { outsideCount = 0; return; }
+      // Launch grace: pehle 10s me auto-hide mat karo, taake Settings -> Update tak pahunch sake.
+      if (Date.now() - launchAt < 10000) return;
       const pt = screen.getCursorScreenPoint();
       const b = win.getBounds();
-      const area2 = screen.getPrimaryDisplay().workArea;
-      // Mouse right edge ke 30px andar ho to wo arrow zone hai, hide mat karo, warna slide aadhe me ruk jayegi.
-      if (pt.x >= area2.x + area2.width - 30) return;
       const inside = pt.x >= b.x && pt.x <= b.x + b.width && pt.y >= b.y && pt.y <= b.y + b.height;
       if (!inside) {
-        // Mouse sidebar ke bahar hai, to hide karo (renderer ke mouseleave par depend mat karo)
-        slideToHidden(true);
-        try { win.webContents.send('auto-hide-hide'); } catch {}
-      }
+        outsideCount++;
+        if (outsideCount >= 2) { outsideCount = 0; slideToHidden(true); }
+      } else outsideCount = 0;
     } catch {}
-  }, 1000);
-}
-function arrowHtml() {
-  const light = theme === 'light';
-  const bg = light ? '#f3e6d3' : '#1a1210';
-  const border = light ? '#e0cdb0' : '#3a2a22';
-  return '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:24px;height:64px;border:1px solid ' + border + ';border-right:0;border-radius:12px 0 0 12px;background:' + bg + ';color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>';
-}
-let arrowWin = null;
-function createArrowWindow() {
-  if (arrowWin) return;
-  const area = screen.getPrimaryDisplay().workArea;
-  const w = 24, h = 64;
-  arrowWin = new BrowserWindow({
-    width: w, height: h,
-    x: area.x + area.width - w - 4, y: area.y + Math.round((area.height - h) / 2),
-    frame: false, transparent: true, backgroundColor: '#00000000',
-    resizable: false, minimizable: false, maximizable: false,
-    alwaysOnTop: true, skipTaskbar: true, focusable: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
-  });
-  arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
-    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:24px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>'
-  ));
-  arrowWin.on('closed', () => { arrowWin = null; });
-  arrowWin.hide();
+  }, 500);
 }
 function createWindow() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
@@ -253,14 +233,8 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  win.on('closed', () => {
-    win = null;
-    // Main window band ho to arrow window bhi band karo, warna app background me
-    // zinda rehta hai, dobara kholne par single-instance lock ki wajah se kuch nahi khulta.
-    try { if (arrowWin && !arrowWin.isDestroyed()) arrowWin.close(); } catch {}
-    arrowWin = null;
-  });
-  createArrowWindow();
+  win.on('closed', () => { win = null; });
+  launchAt = Date.now();
   startMousePoll();
 }
 
@@ -289,15 +263,10 @@ ipcMain.handle('set-autohide', (_e, next) => {
   if (!autoHide) slideToHidden(false);
   return autoHide;
 });
-ipcMain.handle('show-from-arrow', () => {
-  slideToHidden(false);
-  try { if (win) win.webContents.send('auto-hide-show'); } catch {}
-  return hidden;
-});
+ipcMain.handle('show-from-arrow', () => { slideToHidden(false); return hidden; });
 ipcMain.handle('set-theme', (_e, next) => {
-  theme = next === 'light' ? 'light' : 'dark';
+  theme = (next === 'light' || next === 'glass') ? next : 'dark';
   saveSettings();
-  try { if (arrowWin && !arrowWin.isDestroyed()) arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(arrowHtml())); } catch {}
   return theme;
 });
 ipcMain.handle('set-github-token', (_e, token) => {
