@@ -2,8 +2,10 @@
   {
     "id": "todo-list",
     "name": "To Do List",
-    "icon": "\ud83d\udccb",
+    "icon": "",
     "target": "todo",
-    "kind": "app"
+    "kind": "app",
+    "logo": "todo-logo-orange-final.png",
+    "logoLight": "todo-logo-orange-final-inverted.png"
   }
 ]
