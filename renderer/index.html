@@ -282,10 +282,16 @@
   function setHiddenState(next) {
     if (hidden === next) return;
     hidden = next;
-    document.body.classList.toggle('hidden', hidden);
+    if (hidden) {
+      document.body.classList.add('hidden');
+    } else {
+      // Show slide: pehle arrow-only hatao, reflow, phir next frame par hidden hatao, taake transform 120% -> 0 animate ho.
+      // Agar hidden turant hata diya jaye jab dock display:none hai, to slide kabhi paint nahi hota, achanak aa jata hai.
+      document.body.classList.remove('arrow-only');
+      void document.querySelector('.dock').offsetWidth;
+      requestAnimationFrame(() => { document.body.classList.remove('hidden'); });
+    }
     window.sideDock.setHidden(hidden);
-    // Hidden ho to main window click-through rehti hai (main.js me ignore ON),
-    // taake peeche wali window ke button block na hon. Arrow alag window hai.
     if (!hidden) window.sideDock.setMouseEvents(false);
   }
   // Arrow window se show hone par renderer ka hidden flag bhi sync karo,
@@ -303,9 +309,8 @@
     window.sideDock.onAutoHideShow(() => {
       cancelHide();
       lastShowAt = Date.now();
+      if (!hidden) return; // setHiddenState ne staged slide already kar diya hai, dobara mat karo.
       hidden = false;
-      // Slide wapas lane ke liye: pehle arrow-only hatao (dock layout me wapas, par abhi bhi hidden slide position par),
-      // phir next frame par hidden hatao, taake CSS transition translateX 120% -> 0 animate ho, achanak na aaye.
       document.body.classList.remove('arrow-only');
       void document.querySelector('.dock').offsetWidth;
       requestAnimationFrame(() => { document.body.classList.remove('hidden'); });
