@@ -160,8 +160,7 @@ function updateBackgroundMaterial() {
 function dockWindow() {
   if (!win) return;
   const s = cardSize();
-  win.setSize(s.width, s.height);
-  win.setPosition(s.x, s.y);
+  win.setBounds({ x: s.x, y: s.y, width: s.width, height: s.height }, true);
 }
 let launchAt = Date.now();
 let hideTimeout = null;
@@ -178,8 +177,8 @@ function slideToHidden(next) {
     hideTimeout = setTimeout(() => {
       try {
         win.setResizable(true);
-        win.setSize(24, 64);
-        win.setPosition(area.x + area.width - 28, area.y + Math.round((area.height - 64) / 2));
+        // Ek hi setBounds call: size aur position ek sath, taake window pehle upar chota na ho, phir center me jump na kare.
+        win.setBounds({ x: area.x + area.width - 28, y: area.y + Math.round((area.height - 64) / 2), width: 24, height: 64 }, true);
         win.setIgnoreMouseEvents(false, { forward: true });
         updateBackgroundMaterial();
       } catch {}
@@ -188,8 +187,7 @@ function slideToHidden(next) {
     // Show: pehle window ko poori size par wapas lao, phir renderer ko show kaho, dock CSS slide se andar aayega.
     try {
       win.setResizable(true);
-      win.setSize(s.width, s.height);
-      win.setPosition(s.x, s.y);
+      win.setBounds({ x: s.x, y: s.y, width: s.width, height: s.height }, true);
       win.setIgnoreMouseEvents(false, { forward: true });
       updateBackgroundMaterial();
       win.webContents.send('auto-hide-show');
