@@ -181,7 +181,7 @@ function cardSize() {
   // Rail hamesha right edge par: panel closed = 220 wide window (56 rail + transparent left, click-through),
   // panel open = 284 wide window (220 expanded panel + 8 gap + 56 rail), right edge hamesha fixed.
   const area = screen.getPrimaryDisplay().workArea;
-  const width = panelOpen ? 352 : 220;
+  const width = panelOpen ? 372 : 220;
   return { width, height: Math.max(400, area.height - 16), x: area.x + area.width - width - 4, y: area.y + 8 };
 }
 function updateBackgroundMaterial() {
