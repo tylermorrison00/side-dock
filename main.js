@@ -246,7 +246,15 @@ ipcMain.handle('do-update', async () => {
     let localVersion = '';
     try { localVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version || ''; } catch {}
     const token = loadToken();
-    const remote = JSON.parse(await fetchText(UPDATE_RAW + '?t=' + Date.now(), token));
+    // Raw file 5 minute tak purana version dikhata hai, is liye version
+    // check GitHub API se karo, wo foran naya version deta hai.
+    let remote;
+    try {
+      const api = JSON.parse(await fetchText('https://api.github.com/repos/tylermorrison00/side-dock/contents/package.json', token));
+      remote = JSON.parse(Buffer.from(String(api.content || '').replace(/\n/g, ''), 'base64').toString('utf8'));
+    } catch {
+      remote = JSON.parse(await fetchText(UPDATE_RAW + '?t=' + Date.now(), token));
+    }
     if (remote.version && remote.version === localVersion) {
       return { ok: true, updated: false, version: localVersion, message: 'App pehle se latest hai.' };
     }
