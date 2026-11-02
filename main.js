@@ -171,30 +171,36 @@ function slideToHidden(next) {
   const s = cardSize();
   if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
   if (hidden) {
-    // Step 1: renderer ko hidden class do, dock CSS slide se bahar jayega (180ms, hamesha target par settle hota hai)
     try { win.webContents.send('auto-hide-hide'); } catch {}
-    // Step 2: slide khatam hone ke baad window ko sirf arrow size par le jao, taake koi full-height strip, shadow ya click-block na rahe.
-    hideTimeout = setTimeout(() => {
+    // Window slide, NOT resize: x ko full se right-edge tak le jao, size hamesha 220x1064 rahega, kabhi chota nahi hoga.
+    const startX = win.getBounds().x;
+    const targetX = area.x + area.width - 28;
+    const steps = 12;
+    let i = 0;
+    hideTimeout = setInterval(() => {
+      i++;
       try {
-        win.setResizable(true);
-        // Windows DWM window resize ko animate karke dikhata hai, is liye chota hote dikhta tha.
-        // Is liye resize ke waqt window ko chhupao, phir size badlo, phir dikhao - resize animation kabhi nazar nahi aayega, sirf arrow center me dikhega.
-        win.hide();
-        win.setBounds({ x: area.x + area.width - 28, y: area.y + Math.round((area.height - 64) / 2), width: 24, height: 64 }, false);
-        win.show();
-        win.setIgnoreMouseEvents(false, { forward: true });
-        updateBackgroundMaterial();
-      } catch {}
-    }, 500);
+        const x = Math.round(startX + (targetX - startX) * (i / steps));
+        win.setBounds({ x, y: s.y, width: s.width, height: s.height }, false);
+        if (i >= steps) { clearInterval(hideTimeout); hideTimeout = null; try { win.webContents.send('auto-hide-arrow-only'); } catch {} }
+      } catch { clearInterval(hideTimeout); hideTimeout = null; }
+    }, 25);
   } else {
-    // Show: pehle window ko poori size par wapas lao, phir renderer ko show kaho, dock CSS slide se andar aayega.
-    try {
-      win.setResizable(true);
-      win.setBounds({ x: s.x, y: s.y, width: s.width, height: s.height }, true);
-      win.setIgnoreMouseEvents(false, { forward: true });
-      updateBackgroundMaterial();
-      win.webContents.send('auto-hide-show');
-    } catch {}
+    // Show: window ko wapas full position par slide karo, size kabhi change nahi.
+    try { win.webContents.send('auto-hide-show'); } catch {}
+    const startX = win.getBounds().x;
+    const targetX = s.x;
+    const steps = 12;
+    let i = 0;
+    hideTimeout = setInterval(() => {
+      i++;
+      try {
+        const x = Math.round(startX + (targetX - startX) * (i / steps));
+        win.setBounds({ x, y: s.y, width: s.width, height: s.height }, false);
+        if (i >= steps) { clearInterval(hideTimeout); hideTimeout = null; }
+      } catch { clearInterval(hideTimeout); hideTimeout = null; }
+    }, 25);
+    try { win.setIgnoreMouseEvents(false, { forward: true }); updateBackgroundMaterial(); } catch {}
   }
 }
 let mousePollTimer = null;

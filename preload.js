@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('sideDock', {
   showFromArrow: () => ipcRenderer.invoke('show-from-arrow'),
   onAutoHideShow: (cb) => ipcRenderer.on('auto-hide-show', cb),
   onAutoHideHide: (cb) => ipcRenderer.on('auto-hide-hide', cb),
+  onAutoHideArrowOnly: (cb) => ipcRenderer.on('auto-hide-arrow-only', cb),
   setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
   setAutostart: (on) => ipcRenderer.invoke('set-autostart', on),
   doUpdate: () => ipcRenderer.invoke('do-update'),

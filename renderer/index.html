@@ -113,10 +113,10 @@
   body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
   #arrowTab { display: none; width: 24px; height: 64px; background: var(--bg); border: 1px solid var(--line); border-right: 0; border-radius: 12px 0 0 12px; color: var(--accent); font-size: 16px; font-weight: 800; align-items: center; justify-content: center; cursor: pointer; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
-  body.hidden { display: grid; place-items: center; }
-  body.hidden #arrowTab { position: static; transform: none; }
+  body.hidden { display: block; }
+  body.hidden #arrowTab { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
   body.arrow-only .dock { display: none !important; }
-  body.arrow-only #arrowTab { position: static; transform: none; }
+  body.arrow-only #arrowTab { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
   body.hidden #arrowTab { display: grid; }
   /* Auto-hide: hidden hone par dock chhupa rehta hai, arrow alag chhoti window me dikhta hai,
      taake main window click-through ho aur peeche wali window ke button block na hon. */
@@ -289,7 +289,7 @@
       hidden = true;
       document.body.classList.add('hidden');
       // Slide khatam hone ke baad dock ko layout se hatao, taake arrow grid me bilkul center me aaye, neeche ya upar nahi.
-      setTimeout(() => { if (hidden) document.body.classList.add('arrow-only'); }, 500);
+      // arrow-only sirf main se aayega jab window slide poora ho jaye, taake race na ho.
     });
   }
   if (window.sideDock.onAutoHideShow) {
