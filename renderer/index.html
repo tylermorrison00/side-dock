@@ -178,7 +178,7 @@
   });
   document.getElementById('updateBtn').addEventListener('click', async () => {
     const status = document.getElementById('updateStatus');
-    status.textContent = 'Update check ho raha hai, thoda wait karo...';
+    status.textContent = 'Checking for update, please wait...';
     const result = await window.sideDock.doUpdate();
     status.textContent = result.message || '';
   });

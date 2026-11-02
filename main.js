@@ -241,7 +241,7 @@ ipcMain.handle('launch-tool', (_e, tool) => {
 ipcMain.handle('window-min', () => win && win.minimize());
 ipcMain.handle('window-close', () => win && win.close());
 ipcMain.handle('do-update', async () => {
-  if (process.platform !== 'win32') return { ok: false, message: 'Update sirf Windows version par hai.' };
+  if (process.platform !== 'win32') return { ok: false, message: 'Update is only available on the Windows version.' };
   try {
     let localVersion = '';
     try { localVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version || ''; } catch {}
@@ -256,7 +256,7 @@ ipcMain.handle('do-update', async () => {
       remote = JSON.parse(await fetchText(UPDATE_RAW + '?t=' + Date.now(), token));
     }
     if (remote.version && remote.version === localVersion) {
-      return { ok: true, updated: false, version: localVersion, message: 'App pehle se latest hai.' };
+      return { ok: true, updated: false, version: localVersion, message: 'App is already up to date.' };
     }
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sidedock-update-'));
     const zipPath = path.join(tmpDir, 'update.zip');
@@ -280,12 +280,12 @@ ipcMain.handle('do-update', async () => {
     try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
     const newVersion = remote.version || '';
     setTimeout(() => { app.relaunch(); app.quit(); }, 500);
-    return { ok: true, updated: true, version: newVersion, message: 'Update ho gaya, app restart ho rahi hai.' };
+    return { ok: true, updated: true, version: newVersion, message: 'Update done, app is restarting.' };
   } catch (e) {
     const msg = String(e.message || e);
     if (msg.includes('401') || msg.includes('403') || msg.includes('404')) {
-      return { ok: false, message: 'Repo tak rasai nahi ho rahi, thodi der baad dobara Update dabao.' };
+      return { ok: false, message: 'Cannot reach the repo, please try Update again later.' };
     }
-    return { ok: false, message: 'Update nahi ho saka: ' + msg };
+    return { ok: false, message: 'Update failed: ' + msg };
   }
 });
