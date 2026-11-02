@@ -212,23 +212,23 @@ function arrowHtml() {
   const light = theme === 'light';
   const bg = light ? '#f3e6d3' : '#1a1210';
   const border = light ? '#e0cdb0' : '#3a2a22';
-  return '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid ' + border + ';border-right:0;border-radius:12px 0 0 12px;background:' + bg + ';color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>';
+  return '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:24px;height:64px;border:1px solid ' + border + ';border-right:0;border-radius:12px 0 0 12px;background:' + bg + ';color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>';
 }
 let arrowWin = null;
 function createArrowWindow() {
   if (arrowWin) return;
   const area = screen.getPrimaryDisplay().workArea;
-  const w = 20, h = 64;
+  const w = 24, h = 64;
   arrowWin = new BrowserWindow({
     width: w, height: h,
-    x: area.x + area.width - w, y: area.y + Math.round((area.height - h) / 2),
+    x: area.x + area.width - w - 4, y: area.y + Math.round((area.height - h) / 2),
     frame: false, transparent: true, backgroundColor: '#00000000',
     resizable: false, minimizable: false, maximizable: false,
     alwaysOnTop: true, skipTaskbar: true, focusable: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   arrowWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(
-    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:20px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>'
+    '<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}button{width:24px;height:64px;border:1px solid #3a2a22;border-right:0;border-radius:12px 0 0 12px;background:#1a1210;color:#ff7a1a;font-size:16px;font-weight:800;cursor:pointer}</style></head><body><button id="a">◀</button><script>const open=()=>window.sideDock.showFromArrow();document.getElementById("a").addEventListener("mouseenter",open);document.getElementById("a").addEventListener("click",open);document.getElementById("a").addEventListener("dblclick",open);document.body.addEventListener("mouseenter",open);</script></body></html>'
   ));
   arrowWin.on('closed', () => { arrowWin = null; });
   arrowWin.hide();
