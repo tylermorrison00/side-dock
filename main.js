@@ -140,8 +140,11 @@ async function applyAutostart() {
 }
 
 function cardSize() {
+  // Window ka size hamesha expanded jitna rehta hai, taake collapse par
+  // window resize ya relaunch se jhatka na lage. Sirf andar wali card
+  // chhoti hoti hai, aur khali hissa click-through hota hai.
   const area = screen.getPrimaryDisplay().workArea;
-  const { width } = windowSize();
+  const width = 280;
   return { width, height: Math.max(400, area.height - 48), x: area.x + area.width - width - 16, y: area.y + 24 };
 }
 function dockWindow() {
@@ -211,11 +214,11 @@ ipcMain.handle('set-autostart', async (_e, next) => {
 ipcMain.handle('set-mode', (_e, next) => {
   mode = next === 'collapsed' ? 'collapsed' : 'expanded';
   saveSettings();
-  // Windows par maujooda window ka size badalne se dobara collapse par
-  // content blank ho jata hai, is liye purani window band karke nayi
-  // window nayi size me kholo, taake har mode me saaf paint ho.
-  setTimeout(() => { try { app.relaunch(); app.quit(); } catch {} }, 200);
   return mode;
+});
+ipcMain.handle('set-mouse-events', (_e, ignore) => {
+  try { if (win) win.setIgnoreMouseEvents(!!ignore, { forward: true }); } catch {}
+  return true;
 });
 ipcMain.handle('add-tool', (_e, tool) => {
   const tools = loadTools();

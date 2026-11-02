@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('sideDock', {
   removeTool: (id) => ipcRenderer.invoke('remove-tool', id),
   launchTool: (tool) => ipcRenderer.invoke('launch-tool', tool),
   minimize: () => ipcRenderer.invoke('window-min'),
-  close: () => ipcRenderer.invoke('window-close')
+  close: () => ipcRenderer.invoke('window-close'),
+  setMouseEvents: (ignore) => ipcRenderer.invoke('set-mouse-events', ignore)
 });

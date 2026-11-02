@@ -17,10 +17,12 @@
     overflow: hidden; user-select: none;
   }
   .dock {
-    height: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
+    height: 100%; width: 100%; padding: 14px 10px; display: flex; flex-direction: column; gap: 14px;
     background: var(--bg); border: 1px solid var(--line); border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    transition: width .18s ease;
   }
+  body.collapsed .dock { width: 76px; margin-left: auto; padding: 14px 8px; align-items: center; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .logo {
@@ -74,7 +76,6 @@
   body.collapsed .brand-name, body.collapsed .brand-sub,
   body.collapsed .tool .name, body.collapsed .tool .del, body.collapsed .collapse-label,
   body.collapsed .winbtns, body.collapsed .add-label { display: none !important; }
-  body.collapsed .dock { padding: 14px 8px; align-items: center; }
   body.collapsed .topbar { flex-direction: column; gap: 8px; width: 60px; justify-content: flex-start; }
   body.collapsed .brand { justify-content: center; }
   body.collapsed .top-actions { justify-content: center; }
@@ -205,7 +206,10 @@
   document.getElementById('minBtn').addEventListener('click', () => window.sideDock.minimize());
   document.getElementById('closeBtn').addEventListener('click', () => window.sideDock.close());
 
-  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; render(); });
+  const dockEl = document.querySelector('.dock');
+  dockEl.addEventListener('mouseenter', () => window.sideDock.setMouseEvents(false));
+  dockEl.addEventListener('mouseleave', () => window.sideDock.setMouseEvents(true));
+  window.sideDock.getState().then(state => { mode = state.mode; autoStart = state.autoStart !== false; tools = state.tools || []; document.getElementById('autoBtn').textContent = autoStart ? 'On' : 'Off'; render(); if (mode === 'collapsed') window.sideDock.setMouseEvents(true); });
 </script>
 </body>
 </html>
