@@ -34,6 +34,7 @@
     transition: transform .30s ease, opacity .30s ease;
   }
   body.hidden .dock { transform: translateX(120%); opacity: 0; pointer-events: none; width: 220px; flex: 0 0 220px; }
+  body.hidden.collapsed .dock { width: 56px; flex: 0 0 56px; }
   body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 1; }
@@ -113,7 +114,7 @@
   body.collapsed .footer { width: 32px; gap: 12px; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
   body.collapsed .form { display: none !important; }
   #arrowTab { display: none; width: 24px; height: 64px; background: var(--bg); border: 1px solid var(--line); border-right: 0; border-radius: 12px 0 0 12px; color: var(--accent); font-size: 16px; font-weight: 800; align-items: center; justify-content: center; cursor: pointer; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
-  body.hidden { display: block; }
+  body.hidden { display: flex; justify-content: flex-end; }
   body.hidden #arrowTab { display: none; }
   body.hidden.arrow-only #arrowTab { display: grid; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
   body.arrow-only .dock { display: none !important; }
