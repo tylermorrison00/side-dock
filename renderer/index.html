@@ -39,7 +39,7 @@
   #rail .tool:hover::after, #rail .settings-btn:hover::after { content: attr(data-name); position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 50; background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
   #rail .settings-btn:hover::after { content: attr(data-tip); }
   body:not(.panel-open) .dock { display: none !important; }
-  body.panel-open .dock { display: flex !important; width: auto; flex: 1 1 auto; max-width: 280px; min-width: 0; }
+  body.panel-open .dock { display: flex !important; width: 280px; flex: 0 0 280px; }
   body.hidden #rail { opacity: 0; pointer-events: none; transform: translateX(120%); transition: transform .30s ease, opacity .30s ease; }
   body.arrow-only #rail { display: none !important; }
   .dock {
@@ -48,7 +48,7 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.60);
     transition: transform .30s ease, opacity .30s ease;
   }
-  body.hidden .dock { transform: translateX(120%); opacity: 0; pointer-events: none; width: auto; flex: 1 1 auto; max-width: 280px; min-width: 0; }
+  body.hidden .dock { transform: translateX(120%); opacity: 0; pointer-events: none; width: 280px; flex: 0 0 280px; }
   body.hidden.collapsed .dock { width: 56px; flex: 0 0 56px; }
   body.collapsed .dock { width: 56px; padding: 14px 8px; align-items: center; border-radius: 18px 18px 18px 18px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; -webkit-app-region: drag; }
