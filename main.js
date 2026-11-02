@@ -119,7 +119,9 @@ function loadTools() {
     // Naye built-in tools (jaise To Do List) purane users ko bhi mil jayen, unke tools delete kiye baghair.
     let changed = false;
     for (const d of defaults) {
-      if (!existing.find(x => x.id === d.id)) { existing.push(d); changed = true; }
+      const ex = existing.find(x => x.id === d.id);
+      if (!ex) { existing.push(d); changed = true; }
+      else if (ex.icon !== d.icon || ex.name !== d.name) { ex.icon = d.icon; ex.name = d.name; changed = true; }
     }
     if (changed) { try { fs.writeFileSync(toolsPath, JSON.stringify(existing, null, 2)); } catch {} }
     return existing;
