@@ -266,6 +266,13 @@
   }
   // Arrow window se show hone par renderer ka hidden flag bhi sync karo,
   // warna window wapas aa jayegi par dock chhupa hi rahega.
+  if (window.sideDock.onAutoHideHide) {
+    window.sideDock.onAutoHideHide(() => {
+      cancelHide();
+      hidden = true;
+      document.body.classList.add('hidden');
+    });
+  }
   if (window.sideDock.onAutoHideShow) {
     window.sideDock.onAutoHideShow(() => {
       cancelHide();

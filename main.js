@@ -180,6 +180,24 @@ function slideToHidden(next) {
   }, 250);
 }
 
+let mousePollTimer = null;
+function startMousePoll() {
+  if (mousePollTimer) return;
+  mousePollTimer = setInterval(() => {
+    try {
+      if (!win || win.isDestroyed()) return;
+      if (!autoHide || hidden) return;
+      const pt = screen.getCursorScreenPoint();
+      const b = win.getBounds();
+      const inside = pt.x >= b.x && pt.x <= b.x + b.width && pt.y >= b.y && pt.y <= b.y + b.height;
+      if (!inside) {
+        // Mouse sidebar ke bahar hai, to hide karo (renderer ke mouseleave par depend mat karo)
+        slideToHidden(true);
+        try { win.webContents.send('auto-hide-hide'); } catch {}
+      }
+    } catch {}
+  }, 500);
+}
 let arrowWin = null;
 function createArrowWindow() {
   if (arrowWin) return;
@@ -232,6 +250,7 @@ function createWindow() {
     arrowWin = null;
   });
   createArrowWindow();
+  startMousePoll();
 }
 
 const gotLock = app.requestSingleInstanceLock();
