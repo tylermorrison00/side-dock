@@ -248,7 +248,7 @@ function startMousePoll() {
   mousePollTimer = setInterval(() => {
     try {
       if (!win || win.isDestroyed()) return;
-      if (!autoHide || hidden) { outsideCount = 0; return; }
+      if (!autoHide || hidden || panelOpen) { outsideCount = 0; return; }
       // Launch grace: pehle 10s me auto-hide mat karo, taake Settings -> Update tak pahunch sake.
       if (Date.now() - launchAt < 10000) return;
       const pt = screen.getCursorScreenPoint();
@@ -383,6 +383,10 @@ ipcMain.handle('delete-todo', (_e, id) => {
   const todos = loadTodos().filter(x => x.id !== id);
   saveTodos(todos); return todos;
 });
+ipcMain.handle('edit-todo', (_e, id, text) => {
+  const todos = loadTodos().map(x => x.id === id ? { ...x, text: String(text || '').slice(0, 200) } : x);
+  saveTodos(todos); return todos;
+});
 ipcMain.handle('get-notes', () => loadNotes());
 ipcMain.handle('add-note', (_e, text) => {
   const notes = loadNotes();
@@ -392,6 +396,10 @@ ipcMain.handle('add-note', (_e, text) => {
 });
 ipcMain.handle('delete-note', (_e, id) => {
   const notes = loadNotes().filter(x => x.id !== id);
+  saveNotes(notes); return notes;
+});
+ipcMain.handle('edit-note', (_e, id, text) => {
+  const notes = loadNotes().map(x => x.id === id ? { ...x, text: String(text || '').slice(0, 2000) } : x);
   saveNotes(notes); return notes;
 });
 ipcMain.handle('launch-tool', (_e, tool) => {
