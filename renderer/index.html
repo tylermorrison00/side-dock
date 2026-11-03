@@ -160,6 +160,12 @@
      taake main window click-through ho aur peeche wali window ke button block na hon. */
   /* body.hidden dock slide handled above */
   body.panel-open #rail .tool:hover::after, body.panel-open #rail .settings-btn:hover::after { content: none; }
+
+.nl-toggle { width:52px; height:28px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); position:relative; cursor:pointer; padding:0; flex-shrink:0; }
+.nl-toggle .knob { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform 0.2s; }
+.nl-toggle.on { background:var(--accent); border-color:var(--accent); }
+.nl-toggle.on .knob { transform:translateX(24px); }
+.nl-toggle:disabled { opacity:0.6; cursor:default; }
 </style>
 </head>
 <body>
@@ -215,7 +221,7 @@
       <div style="font-size:14px; font-weight:700;">Extra Dim: <span id="panelExtraDimValue">0</span>%</div>
       <input id="panelExtraDimSlider" type="range" min="0" max="80" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Normal</span><span>Extra dark</span></div>
-      <button class="btn" id="panelNightLightToggle" style="width:auto; padding:8px 16px; align-self:flex-start; margin-top:8px;">Night Light: Off</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;"><span style="font-size:14px; font-weight:700;">Night Light</span><button class="nl-toggle" id="panelNightLightToggle" aria-label="Night Light toggle"><span class="knob"></span></button></div>
 
     </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
@@ -458,7 +464,7 @@
   document.getElementById('panelExtraDimSlider').addEventListener('input', async (e) => { document.getElementById('panelExtraDimValue').textContent = e.target.value; await window.sideDock.setExtraDim(parseInt(e.target.value, 10)); });
   let nightLightOn = false;
   const nlBtn = document.getElementById('panelNightLightToggle');
-  if (nlBtn) { (async () => { try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; } catch {} })(); nlBtn.addEventListener('click', async () => { nlBtn.disabled = true; nlBtn.textContent = 'Night Light: ...'; await window.sideDock.toggleNightLight(); try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; } catch { nightLightOn = !nightLightOn; } nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; nlBtn.disabled = false; }); }
+  if (nlBtn) { (async () => { try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; nlBtn.classList.toggle('on', nightLightOn); } catch {} })(); nlBtn.addEventListener('click', async () => { nlBtn.disabled = true; nlBtn.disabled = true; await window.sideDock.toggleNightLight(); try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; } catch { nightLightOn = !nightLightOn; } nlBtn.classList.toggle('on', nightLightOn); nlBtn.disabled = false; }); }
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');
