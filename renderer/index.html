@@ -420,17 +420,19 @@
       const cb = document.createElement('button'); cb.innerHTML = doneToday ? '<span style="color:var(--accent); font-size:16px; line-height:1;">✓</span>' : ''; cb.style.cssText = 'width:22px; height:22px; background:var(--panel2); border:1px solid var(--line); border-radius:6px; cursor:pointer; flex-shrink:0; display:grid; place-items:center; padding:0;';
       cb.addEventListener('click', async () => { await window.sideDock.toggleHabit(habit.id); renderPanelHabits(); });
       const nameEl = document.createElement('div'); nameEl.textContent = habit.name; nameEl.style.cssText = 'flex:1; font-size:14px; font-weight:700; word-break:break-word;';
-      const streakEl = document.createElement('div'); streakEl.textContent = streak + ' day streak'; streakEl.style.cssText = 'font-size:12px; color:var(--accent); white-space:nowrap;';
+      const streakEl = document.createElement('div'); streakEl.textContent = streak > 0 ? streak + ' day streak' : ''; streakEl.style.cssText = 'font-size:12px; color:var(--accent); white-space:nowrap; display:' + (streak > 0 ? 'block' : 'none') + ';';
       const editBtn = document.createElement('button'); editBtn.innerHTML = '<img src="../assets/action-edit.png" style="width:18px; height:18px; display:block;">'; editBtn.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
       editBtn.addEventListener('click', () => { const inp = document.createElement('input'); inp.value = habit.name; inp.style.cssText = 'flex:1; min-width:0; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px;'; nameEl.replaceWith(inp); inp.focus(); inp.select(); const save = async () => { const nt = inp.value.trim(); if (nt && nt !== habit.name) await window.sideDock.editHabit(habit.id, nt); renderPanelHabits(); }; inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderPanelHabits(); }); inp.addEventListener('blur', save); });
       const delBtn = document.createElement('button'); delBtn.innerHTML = '<img src="../assets/action-bin.png" style="width:18px; height:18px; display:block;">'; delBtn.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
       delBtn.addEventListener('click', async () => { if (!(await showDeleteConfirm())) return; lastDeleted = { type: 'habit', data: habit }; await window.sideDock.deleteHabit(habit.id); renderPanelHabits(); });
-      row.append(cb, nameEl, streakEl, editBtn, delBtn);
-      const dots = document.createElement('div'); dots.style.cssText = 'display:flex; gap:4px; align-items:center;';
+      row.append(cb, nameEl, streakEl);
+      const dots = document.createElement('div'); dots.style.cssText = 'display:flex; gap:4px; align-items:center; flex-wrap:wrap;';
       const totalEl = document.createElement('span'); totalEl.textContent = total + ' total'; totalEl.style.cssText = 'font-size:12px; color:var(--muted); margin-right:6px;';
       dots.append(totalEl);
-      for (let i = 6; i >= 0; i--) { const dd = new Date(today + 'T00:00:00Z'); dd.setUTCDate(dd.getUTCDate() - i); const k = dd.toISOString().slice(0,10); const dot = document.createElement('span'); dot.style.cssText = 'width:14px; height:14px; border-radius:4px; background:' + (days[k] ? 'var(--accent)' : 'var(--panel2)') + '; border:1px solid var(--line); display:inline-block;'; dots.append(dot); }
-      card.append(row, dots);
+      for (let i = 29; i >= 0; i--) { const dd = new Date(today + 'T00:00:00Z'); dd.setUTCDate(dd.getUTCDate() - i); const k = dd.toISOString().slice(0,10); const dot = document.createElement('span'); dot.style.cssText = 'width:14px; height:14px; border-radius:4px; background:' + (days[k] ? 'var(--accent)' : 'var(--panel2)') + '; border:1px solid var(--line); display:inline-block; flex-shrink:0;'; dots.append(dot); }
+      const btnRow = document.createElement('div'); btnRow.style.cssText = 'display:flex; gap:10px; align-items:center;';
+      btnRow.append(editBtn, delBtn);
+      card.append(row, dots, btnRow);
       listEl.appendChild(card);
     });
   }
