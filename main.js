@@ -520,4 +520,4 @@ ipcMain.handle('do-update', async () => {
   }
 });
 
-app.whenReady.then(() => { setTimeout(() => { try { const lvl = loadExtraDim(); if (lvl > 0) applyExtraDim(lvl); } catch {} }, 1000); });
+app.whenReady().then(() => { setTimeout(() => { try { const lvl = loadExtraDim(); if (lvl > 0) applyExtraDim(lvl); } catch {} }, 1000); });
