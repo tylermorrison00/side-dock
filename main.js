@@ -447,19 +447,19 @@ function applyExtraDim(lvl) {
 let warmWin = null;
 let warmLevel = 0;
 function warmPath() { return path.join(app.getPath('userData'), 'warm.json'); }
-function loadWarm() { try { const v = JSON.parse(fs.readFileSync(warmPath(), 'utf8')); return Math.max(0, Math.min(50, parseInt(v.level, 10) || 0)); } catch { return 0; } }
+function loadWarm() { try { const v = JSON.parse(fs.readFileSync(warmPath(), 'utf8')); return Math.max(0, Math.min(100, parseInt(v.level, 10) || 0)); } catch { return 0; } }
 function saveWarm(lvl) { try { fs.writeFileSync(warmPath(), JSON.stringify({ level: lvl })); } catch {} }
 function applyWarm(lvl) {
-  warmLevel = Math.max(0, Math.min(50, parseInt(lvl, 10) || 0));
+  warmLevel = Math.max(0, Math.min(100, parseInt(lvl, 10) || 0));
   saveWarm(warmLevel);
   if (warmLevel <= 0) { try { if (warmWin) warmWin.close(); } catch {} warmWin = null; return; }
   if (!warmWin) {
-    warmWin = new BrowserWindow({ fullscreen: true, frame: false, transparent: false, backgroundColor: '#ffd9a0', alwaysOnTop: true, skipTaskbar: true, focusable: false, resizable: false, minimizable: false, maximizable: false, closable: true, show: false });
+    warmWin = new BrowserWindow({ fullscreen: true, frame: false, transparent: false, backgroundColor: '#ffa726', alwaysOnTop: true, skipTaskbar: true, focusable: false, resizable: false, minimizable: false, maximizable: false, closable: true, show: false });
     try { warmWin.setIgnoreMouseEvents(true, { forward: true }); } catch {}
     try { warmWin.setAlwaysOnTop(true, 'screen-saver'); } catch {}
     warmWin.on('closed', () => { warmWin = null; });
   }
-  try { warmWin.setOpacity(warmLevel / 100); } catch {}
+  try { warmWin.setOpacity(warmLevel * 0.7 / 100); } catch {}
   try { if (!warmWin.isVisible()) warmWin.showInactive(); } catch {}
 }
 ipcMain.handle('open-nightlight', () => { try { shell.openExternal('ms-settings:nightlight'); return true; } catch { return false; } });
