@@ -121,7 +121,7 @@ function loadTools() {
     for (const d of defaults) {
       const ex = existing.find(x => x.id === d.id);
       if (!ex) { existing.push(d); changed = true; }
-      else if (ex.icon !== d.icon || ex.name !== d.name || ex.logo !== d.logo || ex.logoLight !== d.logoLight) { ex.icon = d.icon; ex.name = d.name; ex.logo = d.logo; ex.logoLight = d.logoLight; changed = true; }
+      else if (ex.icon !== d.icon || ex.name !== d.name || ex.logo !== d.logo || ex.logoLight !== d.logoLight || ex.iconOutline !== d.iconOutline || ex.iconAccent !== d.iconAccent) { ex.icon = d.icon; ex.name = d.name; ex.logo = d.logo; ex.logoLight = d.logoLight; ex.iconOutline = d.iconOutline; ex.iconAccent = d.iconAccent; changed = true; }
     }
     if (changed) { try { fs.writeFileSync(toolsPath, JSON.stringify(existing, null, 2)); } catch {} }
     return existing;

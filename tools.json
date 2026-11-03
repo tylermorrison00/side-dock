@@ -6,7 +6,9 @@
     "target": "todo",
     "kind": "app",
     "logo": "todo-logo-orange-final-inverted.png",
-    "logoLight": "todo-logo-orange-final-inverted.png"
+    "logoLight": "todo-logo-orange-final-inverted.png",
+    "iconOutline": "todo-icon-outline.png",
+    "iconAccent": "todo-icon-accent.png"
   },
   {
     "id": "notes",
@@ -15,6 +17,8 @@
     "target": "notes",
     "kind": "app",
     "logo": "notes-logo-orange-final.png",
-    "logoLight": "notes-logo-orange-final.png"
+    "logoLight": "notes-logo-orange-final.png",
+    "iconOutline": "notes-icon-outline.png",
+    "iconAccent": "notes-icon-accent.png"
   }
 ]

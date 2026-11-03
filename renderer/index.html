@@ -38,19 +38,19 @@
     background: var(--panel2); border: 1px solid var(--line);
   }
   #railTools .tool img, #toolList .tool .icon img, #toolLogoImg {
-    filter: grayscale(1) brightness(1.0); opacity: 0.75; transition: filter .2s ease, opacity .2s ease, background .2s ease;
+    opacity: 1; transition: opacity .2s ease, background .2s ease;
   }
   #railTools .tool:hover, #toolList .tool:hover {
     background: var(--accent); border-color: var(--accent);
   }
   #railTools .tool:hover img, #railTools .tool.active img, #toolList .tool:hover .icon img, .brand:hover #toolLogoImg {
-    filter: none; opacity: 1;
+    opacity: 1;
   }
   #railTools .tool .icon, #toolList .tool .icon {
-    filter: grayscale(1); opacity: 0.75; transition: filter .2s ease, opacity .2s ease;
+    opacity: 1; transition: opacity .2s ease;
   }
   #railTools .tool:hover .icon, #railTools .tool.active .icon {
-    filter: none; opacity: 1;
+    opacity: 1;
   }
   #railTools .tool.active {
     background: var(--accent); border-color: var(--accent);
@@ -271,7 +271,13 @@
       list.appendChild(b);
       const rb = document.createElement('button');
       rb.className = 'tool' + (currentTool && currentTool.id === tool.id ? ' active' : ''); rb.dataset.name = tool.name; rb.style.position = 'relative';
-      rb.innerHTML = tool.logo ? `<img src="../assets/${tool.logo}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
+      const railIcon = tool.iconOutline || tool.logo;
+      const isActive = currentTool && currentTool.id === tool.id;
+      rb.innerHTML = railIcon ? `<img src="../assets/${isActive && tool.iconAccent ? tool.iconAccent : railIcon}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
+      if (tool.iconOutline && tool.iconAccent) {
+        rb.addEventListener('mouseenter', () => { const im = rb.querySelector('img'); if (im) im.src = `../assets/${tool.iconAccent}`; });
+        rb.addEventListener('mouseleave', () => { const im = rb.querySelector('img'); if (im && !(currentTool && currentTool.id === tool.id)) im.src = `../assets/${tool.iconOutline}`; });
+      }
       rb.addEventListener('click', async () => {
         if (panelOpen && currentTool && currentTool.id === tool.id) { await closePanel(); return; }
         await openPanel();
