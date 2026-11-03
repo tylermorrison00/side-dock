@@ -8,6 +8,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   .dock::-webkit-scrollbar, #toolView::-webkit-scrollbar, .tool-list::-webkit-scrollbar, #railTools::-webkit-scrollbar, #panelTodoList::-webkit-scrollbar, #panelNotesList::-webkit-scrollbar, #panelNotesUI::-webkit-scrollbar { display: none; width: 0; height: 0; }
   .dock, #toolView, .tool-list, #railTools, #panelTodoList, #panelNotesList { scrollbar-width: none; -ms-overflow-style: none; }
+  textarea::-webkit-scrollbar, input::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  textarea { scrollbar-width: none; -ms-overflow-style: none; }
   :root {
     --bg: rgba(26, 18, 16, 0.85); --panel: rgba(36, 26, 21, 0.85); --panel2: rgba(46, 33, 26, 0.85); --line: #3a2a22;
     --text: #f5e9dc; --muted: #a89888; --green: #2fe07a; --cyan: #ff7a1a;
@@ -178,6 +180,7 @@
     </div>
     <div id="panelTodoList" style="display:flex; flex-direction:column; gap:8px;"></div>
     <div id="panelNotesUI" style="display:none; flex-direction:column; gap:12px;">
+      <input id="panelNoteTitle" placeholder="Title..." style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-weight:700;">
       <textarea id="panelNoteInput" placeholder="Write a note..." style="width:100%; min-height:100px; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-family:inherit; resize:vertical;"></textarea>
       <button class="btn primary" id="panelAddNoteBtn" style="width:auto; padding:10px 16px; align-self:flex-start;">Add note</button>
       <div id="panelNotesList" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -327,26 +330,39 @@
     listEl.innerHTML = '';
     if (!notes.length) { listEl.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px 10px; font-size:14px;">No notes yet. Write your first note above.</div>'; return; }
     notes.forEach(note => {
-      const div = document.createElement('div');
-      div.style.cssText = 'display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:10px; background:var(--panel); border:1px solid var(--line);';
-      const span = document.createElement('span'); span.textContent = note.text; span.style.cssText = 'flex:1; font-size:14px; word-break:break-word; white-space:pre-wrap;';
-      const edit = document.createElement('button'); edit.textContent = '✎'; edit.style.cssText = 'background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; flex-shrink:0;';
-      edit.addEventListener('click', () => {
-        const ta = document.createElement('textarea'); ta.value = note.text; ta.style.cssText = 'flex:1; min-width:0; min-height:80px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-family:inherit; resize:vertical;';
-        span.replaceWith(ta); ta.focus();
-        const save = async () => { const nt = ta.value.trim(); if (nt && nt !== note.text) await window.sideDock.editNote(note.id, nt); renderPanelNotes(); };
-        ta.addEventListener('keydown', (e) => { if (e.key === 'Escape') renderPanelNotes(); });
-        ta.addEventListener('blur', save);
+      const title = note.title || (note.text || '').split('\n')[0].slice(0, 60) || 'Untitled';
+      const card = document.createElement('div');
+      card.style.cssText = 'display:flex; flex-direction:column; gap:8px; padding:10px 12px; border-radius:10px; background:var(--panel); border:1px solid var(--line);';
+      const titleEl = document.createElement('div'); titleEl.textContent = title; titleEl.style.cssText = 'font-size:14px; font-weight:700; word-break:break-word;';
+      const btnRow = document.createElement('div'); btnRow.style.cssText = 'display:flex; gap:10px; align-items:center;';
+      const mkBtn = (txt, fn) => { const b = document.createElement('button'); b.textContent = txt; b.style.cssText = 'background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:0;'; b.addEventListener('click', fn); return b; };
+      const noteBody = document.createElement('div'); noteBody.textContent = note.text; noteBody.style.cssText = 'display:none; font-size:14px; word-break:break-word; white-space:pre-wrap; color:var(--text);';
+      const expandBtn = mkBtn('▼', () => { const open = noteBody.style.display !== 'none'; noteBody.style.display = open ? 'none' : 'block'; expandBtn.textContent = open ? '▼' : '▲'; });
+      const copyBtn = mkBtn('📋', async () => { await window.sideDock.copyNote(note.text); copyBtn.textContent = '✓'; setTimeout(() => { copyBtn.textContent = '📋'; }, 1200); });
+      const editBtn = mkBtn('✎', () => {
+        const titleInp = document.createElement('input'); titleInp.value = title; titleInp.style.cssText = 'width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-weight:700;';
+        const ta = document.createElement('textarea'); ta.value = note.text; ta.style.cssText = 'width:100%; box-sizing:border-box; min-height:140px; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-family:inherit; resize:none; overflow:hidden;';
+        const autoGrow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(140, ta.scrollHeight) + 'px'; };
+        ta.addEventListener('input', autoGrow);
+        titleEl.replaceWith(titleInp); noteBody.style.display = 'block'; noteBody.replaceWith(ta); autoGrow(); titleInp.focus();
+        const saveRow = document.createElement('div'); saveRow.style.cssText = 'display:flex; gap:8px;';
+        const saveBtn = document.createElement('button'); saveBtn.textContent = 'Save'; saveBtn.className = 'btn primary'; saveBtn.style.cssText = 'padding:8px 16px; width:auto;';
+        saveBtn.addEventListener('click', async () => { const nt = ta.value.trim(); const ti = titleInp.value.trim(); if (nt) await window.sideDock.editNote(note.id, { title: ti || title, text: nt }); renderPanelNotes(); });
+        const cancelBtn = document.createElement('button'); cancelBtn.textContent = 'Cancel'; cancelBtn.className = 'btn'; cancelBtn.style.cssText = 'padding:8px 16px; width:auto;';
+        cancelBtn.addEventListener('click', renderPanelNotes);
+        saveRow.append(saveBtn, cancelBtn); btnRow.after(saveRow);
       });
-      const del = document.createElement('button'); del.textContent = '✕'; del.style.cssText = 'background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; flex-shrink:0;';
-      del.addEventListener('click', async () => { await window.sideDock.deleteNote(note.id); renderPanelNotes(); });
-      div.append(span, edit, del); listEl.appendChild(div);
+      const delBtn = mkBtn('✕', async () => { await window.sideDock.deleteNote(note.id); renderPanelNotes(); });
+      btnRow.append(editBtn, delBtn, expandBtn, copyBtn);
+      card.append(titleEl, btnRow, noteBody);
+      listEl.appendChild(card);
     });
   }
   document.getElementById('panelAddNoteBtn').addEventListener('click', async () => {
     const inp = document.getElementById('panelNoteInput');
+    const titleEl = document.getElementById('panelNoteTitle');
     const text = inp.value.trim(); if (!text) return;
-    await window.sideDock.addNote(text); inp.value = ''; renderPanelNotes();
+    await window.sideDock.addNote({ title: titleEl.value.trim(), text }); inp.value = ''; titleEl.value = ''; renderPanelNotes();
   });
   document.getElementById('panelAddBtn').addEventListener('click', async () => {
     const inp = document.getElementById('panelTodoInput');

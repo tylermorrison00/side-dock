@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, screen, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, safeStorage, clipboard } = require('electron');
 const { exec } = require('child_process');
 const fs = require('fs');
 const https = require('https');
@@ -388,18 +388,25 @@ ipcMain.handle('edit-todo', (_e, id, text) => {
   saveTodos(todos); return todos;
 });
 ipcMain.handle('get-notes', () => loadNotes());
-ipcMain.handle('add-note', (_e, text) => {
+ipcMain.handle('add-note', (_e, data) => {
   const notes = loadNotes();
-  const item = { id: Date.now().toString(), text: String(text || '').slice(0, 2000) };
-  if (!item.text.trim()) return notes;
+  const title = typeof data === 'object' ? String(data.title || '').slice(0, 200) : '';
+  const text = typeof data === 'object' ? String(data.text || '').slice(0, 5000) : String(data || '').slice(0, 5000);
+  if (!text.trim()) return notes;
+  const item = { id: Date.now().toString(), title: title.trim() || text.split('\n')[0].slice(0, 60), text };
   notes.unshift(item); saveNotes(notes); return notes;
 });
+ipcMain.handle('copy-note', (_e, text) => { try { clipboard.writeText(String(text || '')); } catch {} return true; });
 ipcMain.handle('delete-note', (_e, id) => {
   const notes = loadNotes().filter(x => x.id !== id);
   saveNotes(notes); return notes;
 });
-ipcMain.handle('edit-note', (_e, id, text) => {
-  const notes = loadNotes().map(x => x.id === id ? { ...x, text: String(text || '').slice(0, 2000) } : x);
+ipcMain.handle('edit-note', (_e, id, data) => {
+  const notes = loadNotes().map(x => {
+    if (x.id !== id) return x;
+    if (typeof data === 'object') return { ...x, title: String(data.title || x.title || '').slice(0, 200), text: String(data.text || '').slice(0, 5000) };
+    return { ...x, text: String(data || '').slice(0, 5000) };
+  });
   saveNotes(notes); return notes;
 });
 ipcMain.handle('launch-tool', (_e, tool) => {
