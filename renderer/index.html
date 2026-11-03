@@ -53,7 +53,7 @@
     opacity: 1;
   }
   #railTools .tool.active {
-    background: var(--accent); border-color: var(--accent);
+    background: var(--panel2); border-color: var(--line);
   }
   #rail { width: 56px; height: 100%; flex: 0 0 56px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.60); }
   #rail .logo { width: 32px; height: 32px; flex: 0 0 32px; }
@@ -272,11 +272,10 @@
       const rb = document.createElement('button');
       rb.className = 'tool' + (currentTool && currentTool.id === tool.id ? ' active' : ''); rb.dataset.name = tool.name; rb.style.position = 'relative';
       const railIcon = tool.iconOutline || tool.logo;
-      const isActive = currentTool && currentTool.id === tool.id;
-      rb.innerHTML = railIcon ? `<img src="../assets/${isActive && tool.iconAccent ? tool.iconAccent : railIcon}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
+      rb.innerHTML = railIcon ? `<img src="../assets/${railIcon}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
       if (tool.iconOutline && tool.iconAccent) {
         rb.addEventListener('mouseenter', () => { const im = rb.querySelector('img'); if (im) im.src = `../assets/${tool.iconAccent}`; });
-        rb.addEventListener('mouseleave', () => { const im = rb.querySelector('img'); if (im && !(currentTool && currentTool.id === tool.id)) im.src = `../assets/${tool.iconOutline}`; });
+        rb.addEventListener('mouseleave', () => { const im = rb.querySelector('img'); if (im) im.src = `../assets/${tool.iconOutline}`; });
       }
       rb.addEventListener('click', async () => {
         if (panelOpen && currentTool && currentTool.id === tool.id) { await closePanel(); return; }
