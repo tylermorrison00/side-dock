@@ -39,5 +39,7 @@ contextBridge.exposeInMainWorld('sideDock', {
   restoreHabit: (item) => ipcRenderer.invoke('restore-habit', item),
   getBrightness: () => ipcRenderer.invoke('get-brightness'),
   setBrightness: (level) => ipcRenderer.invoke('set-brightness', level),
+  getExtraDim: () => ipcRenderer.invoke('get-extra-dim'),
+  setExtraDim: (level) => ipcRenderer.invoke('set-extra-dim', level),
   editNote: (id, data) => ipcRenderer.invoke('edit-note', id, data)
 });

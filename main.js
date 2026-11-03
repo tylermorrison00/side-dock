@@ -424,6 +424,27 @@ ipcMain.handle('toggle-habit', (_e, id) => { const h = loadHabits().map(x => { i
 ipcMain.handle('edit-habit', (_e, id, name) => { const h = loadHabits().map(x => x.id === id ? { ...x, name: String(name || '').trim().slice(0,200) || x.name } : x); saveHabits(h); return h; });
 ipcMain.handle('restore-habit', (_e, item) => { const h = loadHabits(); if (!item || h.some(x => x.id === item.id)) return h; h.push({ id: String(item.id), name: String(item.name || ''), days: item.days || {} }); saveHabits(h); return h; });
 
+let brightnessProc = null;
+let extraDimWin = null;
+let extraDimLevel = 0;
+function extraDimPath() { return path.join(app.getPath('userData'), 'extra-dim.json'); }
+function loadExtraDim() { try { const v = JSON.parse(fs.readFileSync(extraDimPath(), 'utf8')); return Math.max(0, Math.min(80, parseInt(v.level, 10) || 0)); } catch { return 0; } }
+function saveExtraDim(lvl) { try { fs.writeFileSync(extraDimPath(), JSON.stringify({ level: lvl })); } catch {} }
+function applyExtraDim(lvl) {
+  extraDimLevel = Math.max(0, Math.min(80, parseInt(lvl, 10) || 0));
+  saveExtraDim(extraDimLevel);
+  if (extraDimLevel <= 0) { try { if (extraDimWin) extraDimWin.close(); } catch {} extraDimWin = null; return; }
+  if (!extraDimWin) {
+    extraDimWin = new BrowserWindow({ fullscreen: true, frame: false, transparent: false, backgroundColor: '#000000', alwaysOnTop: true, skipTaskbar: true, focusable: false, resizable: false, minimizable: false, maximizable: false, closable: true, show: false });
+    try { extraDimWin.setIgnoreMouseEvents(true, { forward: true }); } catch {}
+    try { extraDimWin.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+    extraDimWin.on('closed', () => { extraDimWin = null; });
+  }
+  try { extraDimWin.setOpacity(extraDimLevel / 100); } catch {}
+  try { if (!extraDimWin.isVisible()) extraDimWin.showInactive(); } catch {}
+}
+ipcMain.handle('get-extra-dim', () => ({ level: loadExtraDim() }));
+ipcMain.handle('set-extra-dim', (_e, lvl) => { applyExtraDim(lvl); return { level: extraDimLevel }; });
 ipcMain.handle('get-brightness', async () => {
   return new Promise((resolve) => {
     execFile('powershell', ['-NoProfile', '-Command', "(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightness).CurrentBrightness"], (err, stdout) => {
@@ -434,8 +455,9 @@ ipcMain.handle('get-brightness', async () => {
 });
 ipcMain.handle('set-brightness', async (_e, level) => {
   const lvl = Math.max(0, Math.min(100, parseInt(level, 10) || 0));
+  try { if (brightnessProc) brightnessProc.kill(); } catch {}
   return new Promise((resolve) => {
-    execFile('powershell', ['-NoProfile', '-Command', `(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, ${lvl})`], (err) => { resolve({ ok: !err, level: lvl }); });
+    brightnessProc = execFile('powershell', ['-NoProfile', '-NonInteractive', '-Command', `(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, ${lvl})`], (err) => { brightnessProc = null; resolve({ ok: !err, level: lvl }); });
   });
 });
 ipcMain.handle('launch-tool', (_e, tool) => {
@@ -497,3 +519,5 @@ ipcMain.handle('do-update', async () => {
     return { ok: false, message: 'Update failed: ' + msg };
   }
 });
+
+app.whenReady.then(() => { setTimeout(() => { try { const lvl = loadExtraDim(); if (lvl > 0) applyExtraDim(lvl); } catch {} }, 1000); });

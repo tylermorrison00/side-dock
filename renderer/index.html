@@ -216,6 +216,10 @@
       <input id="panelBrightnessSlider" type="range" min="0" max="100" value="100" style="width:100%; accent-color:var(--accent); cursor:pointer;">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Dim</span><span>Bright</span></div>
       <div id="panelBrightnessNote" style="font-size:12px; color:var(--muted); display:none;">Brightness not supported on this display.</div>
+      <div style="font-size:14px; font-weight:700; margin-top:8px;">Extra Dim (night): <span id="panelExtraDimValue">0</span>%</div>
+      <input id="panelExtraDimSlider" type="range" min="0" max="80" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Normal</span><span>Extra dark</span></div>
+      <div style="font-size:12px; color:var(--muted);">System dim se zyada dark, raat ke liye. Screen poori black nahi hogi, slider hamesha kaam karega.</div>
     </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
       <div id="panelToolDesc" style="font-size:13px; color:var(--muted); word-break:break-word;"></div>
@@ -346,7 +350,7 @@
       document.getElementById('panelHabitUI').style.display = 'none';
       document.getElementById('panelToolOpen').style.display = 'none';
       document.getElementById('panelBrightnessUI').style.display = 'flex';
-      (async () => { const res = await window.sideDock.getBrightness(); const slider = document.getElementById('panelBrightnessSlider'); const val = document.getElementById('panelBrightnessValue'); const note = document.getElementById('panelBrightnessNote'); if (res && res.ok && res.level !== null) { slider.value = res.level; val.textContent = res.level; note.style.display = 'none'; } else { val.textContent = '--'; note.style.display = 'block'; } })();
+      (async () => { try { const ex = await window.sideDock.getExtraDim(); if (ex) { document.getElementById('panelExtraDimSlider').value = ex.level; document.getElementById('panelExtraDimValue').textContent = ex.level; } } catch {} const res = await window.sideDock.getBrightness(); const slider = document.getElementById('panelBrightnessSlider'); const val = document.getElementById('panelBrightnessValue'); const note = document.getElementById('panelBrightnessNote'); if (res && res.ok && res.level !== null) { slider.value = res.level; val.textContent = res.level; note.style.display = 'none'; } else { val.textContent = '--'; note.style.display = 'block'; } })();
     } else {
       document.querySelector('#toolView .add').style.display = 'none';
       document.getElementById('panelTodoList').innerHTML = '';
@@ -454,8 +458,10 @@
   }
   document.getElementById('panelAddHabitBtn').addEventListener('click', async () => { const inp = document.getElementById('panelHabitInput'); const v = inp.value.trim(); if (!v) return; await window.sideDock.addHabit(v); inp.value = ''; renderPanelHabits(); });
   document.getElementById('panelHabitInput').addEventListener('keydown', async (e) => { if (e.key === 'Enter') document.getElementById('panelAddHabitBtn').click(); });
-  document.getElementById('panelBrightnessSlider').addEventListener('input', (e) => { document.getElementById('panelBrightnessValue').textContent = e.target.value; });
-  document.getElementById('panelBrightnessSlider').addEventListener('change', async (e) => { await window.sideDock.setBrightness(parseInt(e.target.value, 10)); });
+  let brightTimer = null;
+  document.getElementById('panelBrightnessSlider').addEventListener('input', (e) => { document.getElementById('panelBrightnessValue').textContent = e.target.value; clearTimeout(brightTimer); brightTimer = setTimeout(async () => { await window.sideDock.setBrightness(parseInt(e.target.value, 10)); }, 150); });
+  document.getElementById('panelBrightnessSlider').addEventListener('change', async (e) => { clearTimeout(brightTimer); await window.sideDock.setBrightness(parseInt(e.target.value, 10)); });
+  document.getElementById('panelExtraDimSlider').addEventListener('input', async (e) => { document.getElementById('panelExtraDimValue').textContent = e.target.value; await window.sideDock.setExtraDim(parseInt(e.target.value, 10)); });
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');
