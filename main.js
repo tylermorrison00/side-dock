@@ -455,8 +455,12 @@ function applyWarm(lvl) {
   saveWarm(warmLevel);
   if (warmProc) { warmPending = warmLevel; return; }
   const runWarm = (level) => {
-    const script = path.join(__dirname, 'warm.ps1');
-    warmProc = execFile('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, '-WarmPercent', String(level)], () => { warmProc = null; if (warmPending !== null && warmPending !== level) { const next = warmPending; warmPending = null; runWarm(next); } else { warmPending = null; } });
+    // Path has a space (Side Dock folder) - -File without quotes fails silently, so copy to Temp (no spaces) and quote it
+    const src = path.join(__dirname, 'warm.ps1');
+    const tmpScript = path.join(os.tmpdir(), 'sidedock-warm.ps1');
+    try { fs.copyFileSync(src, tmpScript); } catch {}
+    const cmd = 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + tmpScript + '" -WarmPercent ' + String(level);
+    warmProc = exec(cmd, () => { warmProc = null; if (warmPending !== null && warmPending !== level) { const next = warmPending; warmPending = null; runWarm(next); } else { warmPending = null; } });
   };
   runWarm(warmLevel);
 }
