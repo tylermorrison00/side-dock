@@ -170,7 +170,7 @@
 <div class="dock">
   <div class="topbar">
     <div class="brand">
-      <div class="logo"><img id="logoImg" src="../assets/icon-orange-dark.png" alt="Side Dock" onerror="this.src='../assets/icon-orange-transparent.png'; this.onerror=function(){this.src='../assets/icon.png'; this.onerror=function(){this.style.display='none'; this.parentElement.textContent='⚡';};};"></div>
+      <div class="logo"><img id="logoImg" src="../assets/icon-cyan.png" alt="Side Dock" onerror="this.onerror=function(){this.src='../assets/icon.png'; this.onerror=function(){this.style.display='none'; this.parentElement.textContent='⚡';};};"></div>
       <div class="brand-name">Side Dock</div>
     </div>
     <div class="top-actions">
@@ -226,7 +226,7 @@
 
 </div>
 <div id="rail">
-  <div class="logo"><img id="railLogoImg" src="../assets/icon-orange-dark.png" alt="Side Dock" onerror="this.style.display='none';"></div>
+  <div class="logo"><img id="railLogoImg" src="../assets/icon-cyan.png" alt="Side Dock" onerror="this.style.display='none';"></div>
   <div id="railTools"></div>
   <button class="settings-btn" id="railSettingsBtn" title="Settings" data-tip="Settings">⚙</button>
 </div>
@@ -243,11 +243,11 @@
     const tb = document.getElementById('themeBtn');
     if (tb) tb.textContent = theme === 'light' ? 'Light' : 'Dark';
     const li = document.getElementById('logoImg');
-    if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
+    if (li) li.src = theme === 'light' ? '../assets/icon-cyan.png' : '../assets/icon-cyan.png';
     const tl = document.getElementById('toolLogoImg');
     if (tl && currentTool) tl.src = `../assets/${currentTool.iconAccent || currentTool.iconOutline || currentTool.logo}`;
     const rli = document.getElementById('railLogoImg');
-    if (rli) rli.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
+    if (rli) rli.src = theme === 'light' ? '../assets/icon-cyan.png' : '../assets/icon-cyan.png';
   }
   const list = document.getElementById('toolList');
 
@@ -296,7 +296,7 @@
     document.getElementById('toolList').style.display = 'none';
     document.querySelector('.brand-name').textContent = 'Side Dock';
     const logoEl = document.querySelector('.brand .logo');
-    logoEl.innerHTML = '<img id="logoImg" src="../assets/icon-orange-dark.png" alt="Side Dock">';
+    logoEl.innerHTML = '<img id="logoImg" src="../assets/icon-cyan.png" alt="Side Dock">';
     applyTheme();
   }
   function showToolView(tool) {
