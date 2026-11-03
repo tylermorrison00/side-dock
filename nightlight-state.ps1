@@ -1,0 +1,2 @@
+$key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate'
+try { $data = (Get-ItemProperty -Path $key -Name Data -ErrorAction Stop).Data; if ($data[18] -eq 0x15) { Write-Output "ON" } else { Write-Output "OFF" } } catch { Write-Output "UNKNOWN" }

@@ -458,7 +458,7 @@
   document.getElementById('panelExtraDimSlider').addEventListener('input', async (e) => { document.getElementById('panelExtraDimValue').textContent = e.target.value; await window.sideDock.setExtraDim(parseInt(e.target.value, 10)); });
   let nightLightOn = false;
   const nlBtn = document.getElementById('panelNightLightToggle');
-  if (nlBtn) { nlBtn.addEventListener('click', async () => { nlBtn.disabled = true; nlBtn.textContent = 'Night Light: ...'; await window.sideDock.toggleNightLight(); nightLightOn = !nightLightOn; nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; nlBtn.disabled = false; }); }
+  if (nlBtn) { (async () => { try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; } catch {} })(); nlBtn.addEventListener('click', async () => { nlBtn.disabled = true; nlBtn.textContent = 'Night Light: ...'; await window.sideDock.toggleNightLight(); try { const st = await window.sideDock.getNightLight(); nightLightOn = !!st.on; } catch { nightLightOn = !nightLightOn; } nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; nlBtn.disabled = false; }); }
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');

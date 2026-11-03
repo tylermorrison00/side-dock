@@ -464,8 +464,8 @@ function applyWarm(lvl) {
   };
   runWarm(warmLevel);
 }
-ipcMain.handle('get-nightlight', async () => { return new Promise((resolve) => { exec('powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "try { $d = (Get-ItemProperty -Path \'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\Cache\\DefaultAccount\\$$windows.data.bluelightreduction.bluelightreductionstate\\Current\' -ErrorAction Stop).Data; Write-Output $d.Length } catch { Write-Output 0 }"', (_e, stdout) => { resolve({ ok: true, raw: String(stdout || '').trim() }); }); }); });
-ipcMain.handle('toggle-nightlight', async () => { return new Promise((resolve) => { const src = path.join(__dirname, 'nightlight-toggle.ps1'); const tmpScript = path.join(os.tmpdir(), 'sidedock-nightlight.ps1'); try { fs.copyFileSync(src, tmpScript); } catch {} exec('powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + tmpScript + '"', () => { resolve({ ok: true }); }); }); });
+ipcMain.handle('get-nightlight', async () => { return new Promise((resolve) => { const src = path.join(__dirname, 'nightlight-state.ps1'); const tmpScript = path.join(os.tmpdir(), 'sidedock-nightlight-state.ps1'); try { fs.copyFileSync(src, tmpScript); } catch {} exec('powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + tmpScript + '"', (_e, stdout) => { const s = String(stdout || '').trim(); resolve({ ok: true, on: s === 'ON' }); }); }); });
+ipcMain.handle('toggle-nightlight', async () => { return new Promise((resolve) => { const src = path.join(__dirname, 'nightlight-silent.ps1'); const tmpScript = path.join(os.tmpdir(), 'sidedock-nightlight.ps1'); try { fs.copyFileSync(src, tmpScript); } catch {} exec('powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + tmpScript + '"', (_e, stdout) => { resolve({ ok: String(stdout || '').trim() === 'OK', raw: String(stdout || '').trim() }); }); }); });
 ipcMain.handle('get-warm', () => ({ level: loadWarm() }));
 ipcMain.handle('set-warm', (_e, lvl) => { applyWarm(lvl); return { level: warmLevel }; });
 ipcMain.handle('get-extra-dim', () => ({ level: loadExtraDim() }));
