@@ -216,8 +216,9 @@
       <input id="panelExtraDimSlider" type="range" min="0" max="80" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Normal</span><span>Extra dark</span></div>
       <div style="font-size:14px; font-weight:700; margin-top:8px;">Warm: <span id="panelWarmValue">0</span>%</div>
-      <input id="panelWarmSlider" type="range" min="0" max="80" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
+      <input id="panelWarmSlider" type="range" min="0" max="50" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Cool</span><span>Warm</span></div>
+      <button class="btn" id="panelNightLightBtn" style="width:auto; padding:8px 16px; align-self:flex-start;">Open Night Light Settings</button>
     </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
       <div id="panelToolDesc" style="font-size:13px; color:var(--muted); word-break:break-word;"></div>
@@ -457,6 +458,7 @@
   document.getElementById('panelAddHabitBtn').addEventListener('click', async () => { const inp = document.getElementById('panelHabitInput'); const v = inp.value.trim(); if (!v) return; await window.sideDock.addHabit(v); inp.value = ''; renderPanelHabits(); });
   document.getElementById('panelHabitInput').addEventListener('keydown', async (e) => { if (e.key === 'Enter') document.getElementById('panelAddHabitBtn').click(); });
   document.getElementById('panelExtraDimSlider').addEventListener('input', async (e) => { document.getElementById('panelExtraDimValue').textContent = e.target.value; await window.sideDock.setExtraDim(parseInt(e.target.value, 10)); });
+  document.getElementById('panelNightLightBtn').addEventListener('click', async () => { await window.sideDock.openNightLight(); });
   document.getElementById('panelWarmSlider').addEventListener('input', async (e) => { document.getElementById('panelWarmValue').textContent = e.target.value; await window.sideDock.setWarm(parseInt(e.target.value, 10)); });
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
