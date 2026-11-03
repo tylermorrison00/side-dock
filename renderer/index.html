@@ -43,14 +43,8 @@
   #railTools .tool:hover, #toolList .tool:hover {
     background: var(--panel2); border-color: var(--line);
   }
-  #railTools .tool:hover img, #railTools .tool.active img, #toolList .tool:hover .icon img, .brand:hover #toolLogoImg {
-    opacity: 1;
-  }
   #railTools .tool .icon, #toolList .tool .icon {
     opacity: 1; transition: opacity .2s ease;
-  }
-  #railTools .tool:hover .icon, #railTools .tool.active .icon {
-    opacity: 1;
   }
   #railTools .tool.active {
     background: var(--panel2); border-color: var(--line);
@@ -62,7 +56,7 @@
   #railTools .tool .icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; font-size: 16px; }
   #railTools .tool .name, #railTools .tool .del { display: none !important; }
   #rail .settings-btn { width: 32px; height: 32px; border-radius: 10px; font-size: 15px; }
-  #rail .tool:hover::after, #rail .settings-btn:hover::after { content: attr(data-name); position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 50; background: var(--panel); border: 1px solid var(--line); color: var(--text); padding: 8px 12px; border-radius: 11px; font-size: 13px; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  #rail .tool:hover::after { content: none; }
   #rail .settings-btn:hover::after { content: attr(data-tip); }
   body:not(.panel-open) .dock { display: none !important; }
   body.panel-open .dock { display: flex !important; width: 300px; flex: 0 0 300px; }
