@@ -368,6 +368,11 @@ ipcMain.handle('remove-tool', (_e, id) => {
   saveTools(tools);
   return tools;
 });
+
+function habitsPath() { return path.join(app.getPath('userData'), 'habits.json'); }
+function loadHabits() { try { return JSON.parse(fs.readFileSync(habitsPath(), 'utf8')); } catch { return []; } }
+function saveHabits(h) { try { fs.writeFileSync(habitsPath(), JSON.stringify(h, null, 2)); } catch {} }
+function todayPKT() { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); } catch { const x = new Date(); return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0'); } }
 ipcMain.handle('get-todos', () => loadTodos());
 ipcMain.handle('add-todo', (_e, text) => {
   const todos = loadTodos();
@@ -411,6 +416,12 @@ ipcMain.handle('edit-note', (_e, id, data) => {
   });
   saveNotes(notes); return notes;
 });
+ipcMain.handle('get-habits', () => loadHabits());
+ipcMain.handle('add-habit', (_e, name) => { const h = loadHabits(); const nm = String(name || '').trim().slice(0,200); if (!nm) return h; h.push({ id: Date.now().toString(), name: nm, days: {} }); saveHabits(h); return h; });
+ipcMain.handle('delete-habit', (_e, id) => { const h = loadHabits().filter(x => x.id !== id); saveHabits(h); return h; });
+ipcMain.handle('toggle-habit', (_e, id) => { const h = loadHabits().map(x => { if (x.id !== id) return x; const days = { ...(x.days || {}) }; const today = todayPKT(); if (days[today]) delete days[today]; else days[today] = true; return { ...x, days }; }); saveHabits(h); return h; });
+ipcMain.handle('edit-habit', (_e, id, name) => { const h = loadHabits().map(x => x.id === id ? { ...x, name: String(name || '').trim().slice(0,200) || x.name } : x); saveHabits(h); return h; });
+ipcMain.handle('restore-habit', (_e, item) => { const h = loadHabits(); if (!item || h.some(x => x.id === item.id)) return h; h.push({ id: String(item.id), name: String(item.name || ''), days: item.days || {} }); saveHabits(h); return h; });
 ipcMain.handle('launch-tool', (_e, tool) => {
   if (!tool || !tool.target) return;
   if (tool.target === 'todo' || tool.id === 'todo-list') { openTodoWindow(); return; }

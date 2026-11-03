@@ -20,5 +20,16 @@
     "logoLight": "notes-logo-orange-final.png",
     "iconOutline": "notes-icon-outline.png",
     "iconAccent": "notes-icon-accent.png"
+  },
+  {
+    "id": "habit-tracker",
+    "name": "Habit Tracker",
+    "icon": "",
+    "target": "habit",
+    "kind": "app",
+    "logo": "habit-tracker-logo.png",
+    "logoLight": "habit-tracker-logo.png",
+    "iconOutline": "habit-tracker-logo.png",
+    "iconAccent": "habit-tracker-logo.png"
   }
 ]

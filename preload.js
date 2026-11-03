@@ -31,5 +31,11 @@ contextBridge.exposeInMainWorld('sideDock', {
   deleteNote: (id) => ipcRenderer.invoke('delete-note', id),
   restoreNote: (item) => ipcRenderer.invoke('restore-note', item),
   restoreTodo: (item) => ipcRenderer.invoke('restore-todo', item),
+  getHabits: () => ipcRenderer.invoke('get-habits'),
+  addHabit: (name) => ipcRenderer.invoke('add-habit', name),
+  deleteHabit: (id) => ipcRenderer.invoke('delete-habit', id),
+  toggleHabit: (id) => ipcRenderer.invoke('toggle-habit', id),
+  editHabit: (id, name) => ipcRenderer.invoke('edit-habit', id, name),
+  restoreHabit: (item) => ipcRenderer.invoke('restore-habit', item),
   editNote: (id, data) => ipcRenderer.invoke('edit-note', id, data)
 });

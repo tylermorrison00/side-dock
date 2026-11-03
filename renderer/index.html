@@ -204,6 +204,13 @@
       <button class="btn primary" id="panelAddNoteBtn" style="width:auto; padding:10px 16px; align-self:flex-start;">Add note</button>
       <div id="panelNotesList" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
+    <div id="panelHabitUI" style="display:none; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:8px;">
+        <input id="panelHabitInput" placeholder="Add a daily habit..." style="flex:1; min-width:0; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px;">
+        <button class="btn primary" id="panelAddHabitBtn" style="width:auto; padding:10px 16px;">Add</button>
+      </div>
+      <div id="panelHabitList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
       <div id="panelToolDesc" style="font-size:13px; color:var(--muted); word-break:break-word;"></div>
       <button class="btn primary" id="panelOpenToolBtn"><span>Open</span></button>
@@ -306,18 +313,28 @@
     if (tool.id === 'todo-list' || tool.target === 'todo') {
       document.querySelector('#toolView .add').style.display = 'flex';
       document.getElementById('panelNotesUI').style.display = 'none';
+      document.getElementById('panelHabitUI').style.display = 'none';
       document.getElementById('panelToolOpen').style.display = 'none';
       renderPanelTodos();
     } else if (tool.id === 'notes' || tool.target === 'notes') {
       document.querySelector('#toolView .add').style.display = 'none';
       document.getElementById('panelTodoList').innerHTML = '';
       document.getElementById('panelToolOpen').style.display = 'none';
+      document.getElementById('panelHabitUI').style.display = 'none';
       document.getElementById('panelNotesUI').style.display = 'flex';
       renderPanelNotes();
+    } else if (tool.id === 'habit-tracker' || tool.target === 'habit') {
+      document.querySelector('#toolView .add').style.display = 'none';
+      document.getElementById('panelTodoList').innerHTML = '';
+      document.getElementById('panelNotesUI').style.display = 'none';
+      document.getElementById('panelToolOpen').style.display = 'none';
+      document.getElementById('panelHabitUI').style.display = 'flex';
+      renderPanelHabits();
     } else {
       document.querySelector('#toolView .add').style.display = 'none';
       document.getElementById('panelTodoList').innerHTML = '';
       document.getElementById('panelNotesUI').style.display = 'none';
+      document.getElementById('panelHabitUI').style.display = 'none';
       const po = document.getElementById('panelToolOpen');
       po.style.display = 'flex';
       document.getElementById('panelToolDesc').textContent = tool.target || '';
@@ -350,6 +367,7 @@
     e.preventDefault();
     const item = lastDeleted; lastDeleted = null;
     if (item.type === 'note') { await window.sideDock.restoreNote(item.data); renderPanelNotes(); }
+    else if (item.type === 'habit') { await window.sideDock.restoreHabit(item.data); renderPanelHabits(); }
     else { await window.sideDock.restoreTodo(item.data); renderPanelTodos(); }
   });
   async function renderPanelTodos() {
@@ -376,6 +394,48 @@
       div.append(cb, span, edit, del); listEl.appendChild(div);
     });
   }
+
+  function todayPKTStr() { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); } catch { const x = new Date(); return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0'); } }
+  function habitStreak(days) {
+    let d = new Date(todayPKTStr() + 'T00:00:00Z');
+    if (!days[todayPKTStr()]) d.setUTCDate(d.getUTCDate() - 1);
+    let s = 0;
+    while (days[d.toISOString().slice(0,10)]) { s++; d.setUTCDate(d.getUTCDate() - 1); }
+    return s;
+  }
+  async function renderPanelHabits() {
+    const habits = await window.sideDock.getHabits();
+    const listEl = document.getElementById('panelHabitList');
+    listEl.innerHTML = '';
+    if (!habits.length) { listEl.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px 10px; font-size:14px;">No habits yet. Add your first daily habit above.</div>'; return; }
+    const today = todayPKTStr();
+    habits.forEach(habit => {
+      const days = habit.days || {};
+      const doneToday = !!days[today];
+      const streak = habitStreak(days);
+      const total = Object.keys(days).filter(k => days[k]).length;
+      const card = document.createElement('div');
+      card.style.cssText = 'display:flex; flex-direction:column; gap:8px; padding:10px 12px; border-radius:10px; background:var(--panel); border:1px solid var(--line);';
+      const row = document.createElement('div'); row.style.cssText = 'display:flex; align-items:center; gap:10px;';
+      const cb = document.createElement('button'); cb.innerHTML = doneToday ? '<span style="color:var(--accent); font-size:16px; line-height:1;">✓</span>' : ''; cb.style.cssText = 'width:22px; height:22px; background:var(--panel2); border:1px solid var(--line); border-radius:6px; cursor:pointer; flex-shrink:0; display:grid; place-items:center; padding:0;';
+      cb.addEventListener('click', async () => { await window.sideDock.toggleHabit(habit.id); renderPanelHabits(); });
+      const nameEl = document.createElement('div'); nameEl.textContent = habit.name; nameEl.style.cssText = 'flex:1; font-size:14px; font-weight:700; word-break:break-word;';
+      const streakEl = document.createElement('div'); streakEl.textContent = streak + ' day streak'; streakEl.style.cssText = 'font-size:12px; color:var(--accent); white-space:nowrap;';
+      const editBtn = document.createElement('button'); editBtn.innerHTML = '<img src="../assets/action-edit.png" style="width:18px; height:18px; display:block;">'; editBtn.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
+      editBtn.addEventListener('click', () => { const inp = document.createElement('input'); inp.value = habit.name; inp.style.cssText = 'flex:1; min-width:0; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px;'; nameEl.replaceWith(inp); inp.focus(); inp.select(); const save = async () => { const nt = inp.value.trim(); if (nt && nt !== habit.name) await window.sideDock.editHabit(habit.id, nt); renderPanelHabits(); }; inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderPanelHabits(); }); inp.addEventListener('blur', save); });
+      const delBtn = document.createElement('button'); delBtn.innerHTML = '<img src="../assets/action-bin.png" style="width:18px; height:18px; display:block;">'; delBtn.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
+      delBtn.addEventListener('click', async () => { if (!(await showDeleteConfirm())) return; lastDeleted = { type: 'habit', data: habit }; await window.sideDock.deleteHabit(habit.id); renderPanelHabits(); });
+      row.append(cb, nameEl, streakEl, editBtn, delBtn);
+      const dots = document.createElement('div'); dots.style.cssText = 'display:flex; gap:4px; align-items:center;';
+      const totalEl = document.createElement('span'); totalEl.textContent = total + ' total'; totalEl.style.cssText = 'font-size:12px; color:var(--muted); margin-right:6px;';
+      dots.append(totalEl);
+      for (let i = 6; i >= 0; i--) { const dd = new Date(today + 'T00:00:00Z'); dd.setUTCDate(dd.getUTCDate() - i); const k = dd.toISOString().slice(0,10); const dot = document.createElement('span'); dot.style.cssText = 'width:14px; height:14px; border-radius:4px; background:' + (days[k] ? 'var(--accent)' : 'var(--panel2)') + '; border:1px solid var(--line); display:inline-block;'; dots.append(dot); }
+      card.append(row, dots);
+      listEl.appendChild(card);
+    });
+  }
+  document.getElementById('panelAddHabitBtn').addEventListener('click', async () => { const inp = document.getElementById('panelHabitInput'); const v = inp.value.trim(); if (!v) return; await window.sideDock.addHabit(v); inp.value = ''; renderPanelHabits(); });
+  document.getElementById('panelHabitInput').addEventListener('keydown', async (e) => { if (e.key === 'Enter') document.getElementById('panelAddHabitBtn').click(); });
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');
