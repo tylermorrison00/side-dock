@@ -245,7 +245,7 @@
     const li = document.getElementById('logoImg');
     if (li) li.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
     const tl = document.getElementById('toolLogoImg');
-    if (tl && currentTool) tl.src = `../assets/${currentTool.iconOutline || currentTool.logo}`;
+    if (tl && currentTool) tl.src = `../assets/${currentTool.iconAccent || currentTool.iconOutline || currentTool.logo}`;
     const rli = document.getElementById('railLogoImg');
     if (rli) rli.src = theme === 'light' ? '../assets/icon-orange-light.png' : '../assets/icon-orange-dark.png';
   }
@@ -305,12 +305,9 @@
     document.getElementById('toolList').style.display = 'none';
     document.querySelector('.brand-name').textContent = tool.name;
     const logoEl = document.querySelector('.brand .logo');
-    const headerIcon = tool.iconOutline || tool.logo;
+    const headerIcon = tool.iconAccent || tool.iconOutline || tool.logo;
     const brandEl = document.querySelector('.brand');
-    if (brandEl && tool.iconAccent) {
-      brandEl.onmouseenter = () => { const im = document.getElementById('toolLogoImg'); if (im) im.src = `../assets/${tool.iconAccent}`; };
-      brandEl.onmouseleave = () => { const im = document.getElementById('toolLogoImg'); if (im) im.src = `../assets/${headerIcon}`; };
-    }
+    if (brandEl) { brandEl.onmouseenter = null; brandEl.onmouseleave = null; }
     logoEl.innerHTML = headerIcon ? `<img id="toolLogoImg" src="../assets/${headerIcon}" alt="${tool.name}" style="width:30px; height:30px; border-radius:9px; opacity:1; object-fit:contain; display:block;">` : `<span style="font-size:20px; display:grid; place-items:center; width:100%; height:100%;">${tool.icon || '◆'}</span>`;
     const tv = document.getElementById('toolView');
     tv.style.display = 'flex';
