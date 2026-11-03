@@ -444,25 +444,18 @@ function applyExtraDim(lvl) {
   try { if (!extraDimWin.isVisible()) extraDimWin.showInactive(); } catch {}
 }
 
-let warmWin = null;
 let warmLevel = 0;
 function warmPath() { return path.join(app.getPath('userData'), 'warm.json'); }
 function loadWarm() { try { const v = JSON.parse(fs.readFileSync(warmPath(), 'utf8')); return Math.max(0, Math.min(100, parseInt(v.level, 10) || 0)); } catch { return 0; } }
 function saveWarm(lvl) { try { fs.writeFileSync(warmPath(), JSON.stringify({ level: lvl })); } catch {} }
+let warmProc = null;
 function applyWarm(lvl) {
   warmLevel = Math.max(0, Math.min(100, parseInt(lvl, 10) || 0));
   saveWarm(warmLevel);
-  if (warmLevel <= 0) { try { if (warmWin) warmWin.close(); } catch {} warmWin = null; return; }
-  if (!warmWin) {
-    warmWin = new BrowserWindow({ fullscreen: true, frame: false, transparent: false, backgroundColor: '#ffa726', alwaysOnTop: true, skipTaskbar: true, focusable: false, resizable: false, minimizable: false, maximizable: false, closable: true, show: false });
-    try { warmWin.setIgnoreMouseEvents(true, { forward: true }); } catch {}
-    try { warmWin.setAlwaysOnTop(true, 'screen-saver'); } catch {}
-    warmWin.on('closed', () => { warmWin = null; });
-  }
-  try { warmWin.setOpacity(warmLevel * 0.7 / 100); } catch {}
-  try { if (!warmWin.isVisible()) warmWin.showInactive(); } catch {}
+  try { if (warmProc) warmProc.kill(); } catch {}
+  const script = path.join(__dirname, 'warm.ps1');
+  warmProc = execFile('powershell', ['-NoProfile', '-NonInteractive', '-File', script, '-WarmPercent', String(warmLevel)], () => { warmProc = null; });
 }
-ipcMain.handle('open-nightlight', () => { try { shell.openExternal('ms-settings:nightlight'); return true; } catch { return false; } });
 ipcMain.handle('get-warm', () => ({ level: loadWarm() }));
 ipcMain.handle('set-warm', (_e, lvl) => { applyWarm(lvl); return { level: warmLevel }; });
 ipcMain.handle('get-extra-dim', () => ({ level: loadExtraDim() }));
