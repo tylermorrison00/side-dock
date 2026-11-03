@@ -51,7 +51,7 @@
   }
   #rail { overflow: visible; width: 56px; height: 100%; flex: 0 0 56px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.60); }
   #rail .logo { width: 32px; height: 32px; flex: 0 0 32px; }
-  #railTools { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; overflow-y: auto; width: 100%; }
+  #railTools { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; overflow: visible; width: 100%; }
   #railTools .tool { width: 32px; height: 32px; padding: 0; justify-content: center; }
   #railTools .tool .icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; font-size: 16px; }
   #railTools .tool .name, #railTools .tool .del { display: none !important; }
@@ -267,7 +267,7 @@
       });
       list.appendChild(b);
       const rb = document.createElement('button');
-      rb.className = 'tool' + (currentTool && currentTool.id === tool.id ? ' active' : ''); rb.dataset.name = tool.name; rb.style.position = 'relative';
+      rb.className = 'tool' + (currentTool && currentTool.id === tool.id ? ' active' : ''); rb.dataset.name = tool.name; rb.title = tool.name; rb.style.position = 'relative';
       const railIcon = tool.iconAccent || tool.logo;
       rb.innerHTML = railIcon ? `<img src="../assets/${railIcon}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
       rb.addEventListener('click', async () => {
