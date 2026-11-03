@@ -221,7 +221,7 @@ function slideToHidden(next) {
       try {
         const x = Math.round(startX + (targetX - startX) * (i / steps));
         win.setBounds({ x, y: s.y, width: s.width, height: s.height }, false);
-        if (i >= steps) { clearInterval(hideTimeout); hideTimeout = null; try { win.setIgnoreMouseEvents(false, { forward: true }); } catch {} try { win.webContents.send('auto-hide-arrow-only'); } catch {} }
+        if (i >= steps) { clearInterval(hideTimeout); hideTimeout = null; try { win.setIgnoreMouseEvents(true, { forward: true }); } catch {} try { win.webContents.send('auto-hide-arrow-only'); } catch {} }
       } catch { clearInterval(hideTimeout); hideTimeout = null; }
     }, 25);
   } else {

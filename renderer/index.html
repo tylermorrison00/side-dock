@@ -608,6 +608,7 @@
   if (window.sideDock.onAutoHideArrowOnly) {
     window.sideDock.onAutoHideArrowOnly(() => {
       document.body.classList.add('arrow-only');
+      window.sideDock.setMouseEvents(true);
     });
   }
   if (window.sideDock.onAutoHideShow) {
