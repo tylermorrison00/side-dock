@@ -33,18 +33,27 @@
   }
   .dock, .settings-panel, #toolView { overflow-x: hidden; max-width: 100%; box-sizing: border-box; }
   .dock * { max-width: 100%; }
-  /* Thor style: tool icons transparent/grey by default, full color on hover, active tool stays colored */
-  #railTools .tool img, #toolList .tool .icon img, #toolLogoImg {
-    filter: grayscale(1) brightness(1.15); opacity: 0.65; transition: filter .2s ease, opacity .2s ease;
+  /* Pill style: tool icons muted pill color by default, Update-button accent on hover, active stays accent */
+  #railTools .tool, #toolList .tool {
+    background: var(--panel2); border: 1px solid var(--line);
   }
-  #railTools .tool:hover img, #railTools .tool.active img, .brand:hover #toolLogoImg {
+  #railTools .tool img, #toolList .tool .icon img, #toolLogoImg {
+    filter: grayscale(1) brightness(1.0); opacity: 0.75; transition: filter .2s ease, opacity .2s ease, background .2s ease;
+  }
+  #railTools .tool:hover, #toolList .tool:hover {
+    background: var(--accent); border-color: var(--accent);
+  }
+  #railTools .tool:hover img, #railTools .tool.active img, #toolList .tool:hover .icon img, .brand:hover #toolLogoImg {
     filter: none; opacity: 1;
   }
   #railTools .tool .icon, #toolList .tool .icon {
-    filter: grayscale(1); opacity: 0.65; transition: filter .2s ease, opacity .2s ease;
+    filter: grayscale(1); opacity: 0.75; transition: filter .2s ease, opacity .2s ease;
   }
   #railTools .tool:hover .icon, #railTools .tool.active .icon {
     filter: none; opacity: 1;
+  }
+  #railTools .tool.active {
+    background: var(--accent); border-color: var(--accent);
   }
   #rail { width: 56px; height: 100%; flex: 0 0 56px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.60); }
   #rail .logo { width: 32px; height: 32px; flex: 0 0 32px; }
