@@ -449,12 +449,16 @@ function warmPath() { return path.join(app.getPath('userData'), 'warm.json'); }
 function loadWarm() { try { const v = JSON.parse(fs.readFileSync(warmPath(), 'utf8')); return Math.max(0, Math.min(100, parseInt(v.level, 10) || 0)); } catch { return 0; } }
 function saveWarm(lvl) { try { fs.writeFileSync(warmPath(), JSON.stringify({ level: lvl })); } catch {} }
 let warmProc = null;
+let warmPending = null;
 function applyWarm(lvl) {
   warmLevel = Math.max(0, Math.min(100, parseInt(lvl, 10) || 0));
   saveWarm(warmLevel);
-  try { if (warmProc) warmProc.kill(); } catch {}
-  const script = path.join(__dirname, 'warm.ps1');
-  warmProc = execFile('powershell', ['-NoProfile', '-NonInteractive', '-File', script, '-WarmPercent', String(warmLevel)], () => { warmProc = null; });
+  if (warmProc) { warmPending = warmLevel; return; }
+  const runWarm = (level) => {
+    const script = path.join(__dirname, 'warm.ps1');
+    warmProc = execFile('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, '-WarmPercent', String(level)], () => { warmProc = null; if (warmPending !== null && warmPending !== level) { const next = warmPending; warmPending = null; runWarm(next); } else { warmPending = null; } });
+  };
+  runWarm(warmLevel);
 }
 ipcMain.handle('get-warm', () => ({ level: loadWarm() }));
 ipcMain.handle('set-warm', (_e, lvl) => { applyWarm(lvl); return { level: warmLevel }; });
