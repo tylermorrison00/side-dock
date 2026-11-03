@@ -15,7 +15,8 @@ try { if (-not (Test-Path $backup)) { New-Item -ItemType Directory -Force -Path 
 $kelvin = 6500 - ($Percent / 100) * (6500 - 1200)
 $tempHi = [math]::Floor($kelvin / 64)
 $tempLo = (($kelvin - ($tempHi * 64)) * 2) + 128
-$newData = $data.Clone()
+$newData = New-Object byte[] $data.Length
+[Array]::Copy($data, $newData, $data.Length)
 $newData[0x23] = [byte]$tempLo
 $newData[0x24] = [byte]$tempHi
 for ($i = 10; $i -lt 15; $i++) { if ($newData[$i] -ne 0xff) { $newData[$i]++; break } }
