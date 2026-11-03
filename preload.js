@@ -29,5 +29,7 @@ contextBridge.exposeInMainWorld('sideDock', {
   addNote: (data) => ipcRenderer.invoke('add-note', data),
   copyNote: (text) => ipcRenderer.invoke('copy-note', text),
   deleteNote: (id) => ipcRenderer.invoke('delete-note', id),
+  restoreNote: (item) => ipcRenderer.invoke('restore-note', item),
+  restoreTodo: (item) => ipcRenderer.invoke('restore-todo', item),
   editNote: (id, data) => ipcRenderer.invoke('edit-note', id, data)
 });

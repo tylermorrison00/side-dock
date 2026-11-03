@@ -320,6 +320,35 @@
       document.getElementById('panelToolDesc').textContent = tool.target || '';
     }
   }
+
+  let lastDeleted = null;
+  function showDeleteConfirm() {
+    return new Promise((resolve) => {
+      const dock = document.querySelector('.dock');
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:absolute; inset:0; z-index:100; background:rgba(0,0,0,0.6); display:grid; place-items:center; padding:20px;';
+      overlay.innerHTML = `<div style="background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; text-align:center; width:100%; max-width:260px;">
+        <div style="font-size:15px; font-weight:700; margin-bottom:16px;">Do you really want to delete this?</div>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button id="confirmDelBtn" class="btn primary" style="width:auto; padding:8px 20px;">Delete</button>
+          <button id="cancelDelBtn" class="btn" style="width:auto; padding:8px 20px;">Cancel</button>
+        </div></div>`;
+      dock.style.position = 'relative';
+      dock.appendChild(overlay);
+      overlay.querySelector('#confirmDelBtn').addEventListener('click', () => { overlay.remove(); resolve(true); });
+      overlay.querySelector('#cancelDelBtn').addEventListener('click', () => { overlay.remove(); resolve(false); });
+    });
+  }
+  document.addEventListener('keydown', async (e) => {
+    if (!(e.ctrlKey && e.key && e.key.toLowerCase() === 'z')) return;
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+    if (!lastDeleted) return;
+    e.preventDefault();
+    const item = lastDeleted; lastDeleted = null;
+    if (item.type === 'note') { await window.sideDock.restoreNote(item.data); renderPanelNotes(); }
+    else { await window.sideDock.restoreTodo(item.data); renderPanelTodos(); }
+  });
   async function renderPanelTodos() {
     const todos = await window.sideDock.getTodos();
     const listEl = document.getElementById('panelTodoList');
@@ -328,8 +357,8 @@
     todos.forEach(todo => {
       const div = document.createElement('div');
       div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--panel); border:1px solid var(--line);';
-      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = todo.done; cb.style.cssText = 'width:18px; height:18px; accent-color:var(--accent); cursor:pointer; flex-shrink:0;';
-      cb.addEventListener('change', async () => { await window.sideDock.toggleTodo(todo.id); renderPanelTodos(); });
+      const cb = document.createElement('button'); cb.innerHTML = todo.done ? '<span style="color:var(--accent); font-size:16px; line-height:1;">✓</span>' : ''; cb.style.cssText = 'width:22px; height:22px; background:var(--panel2); border:1px solid var(--line); border-radius:6px; cursor:pointer; flex-shrink:0; display:grid; place-items:center; padding:0;';
+      cb.addEventListener('click', async () => { await window.sideDock.toggleTodo(todo.id); renderPanelTodos(); });
       const span = document.createElement('span'); span.textContent = todo.text; span.style.cssText = 'flex:1; font-size:14px; word-break:break-word;' + (todo.done ? ' text-decoration:line-through; opacity:0.5;' : '');
       const edit = document.createElement('button'); edit.innerHTML = '<img src="../assets/action-edit.png" style="width:18px; height:18px; display:block;">'; edit.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; flex-shrink:0; display:grid; place-items:center;';
       edit.addEventListener('click', () => {
@@ -339,8 +368,8 @@
         inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderPanelTodos(); });
         inp.addEventListener('blur', save);
       });
-      const del = document.createElement('button'); del.innerHTML = '<img src="../assets/action-delete.png" style="width:18px; height:18px; display:block;">'; del.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
-      del.addEventListener('click', async () => { await window.sideDock.deleteTodo(todo.id); renderPanelTodos(); });
+      const del = document.createElement('button'); del.innerHTML = '<img src="../assets/action-bin.png" style="width:18px; height:18px; display:block;">'; del.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;';
+      del.addEventListener('click', async () => { if (!(await showDeleteConfirm())) return; lastDeleted = { type: 'todo', data: todo }; await window.sideDock.deleteTodo(todo.id); renderPanelTodos(); });
       div.append(cb, span, edit, del); listEl.appendChild(div);
     });
   }
@@ -358,7 +387,7 @@
       const mkBtn = (img, fn) => { const b = document.createElement('button'); b.innerHTML = `<img src="../assets/${img}" style="width:18px; height:18px; display:block;">`; b.style.cssText = 'background:var(--panel2); border:1px solid var(--line); border-radius:999px; cursor:pointer; padding:5px 10px; display:grid; place-items:center;'; b.addEventListener('click', fn); return b; };
       const noteBody = document.createElement('div'); noteBody.textContent = note.text; noteBody.style.cssText = 'display:none; font-size:14px; word-break:break-word; white-space:pre-wrap; color:var(--text);';
       const expandBtn = mkBtn('action-expand.png', () => { const open = noteBody.style.display !== 'none'; noteBody.style.display = open ? 'none' : 'block'; expandBtn.querySelector('img').style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)'; });
-      const copyBtn = mkBtn('action-copy.png', async () => { await window.sideDock.copyNote(note.text); copyBtn.innerHTML = '<span style="color:var(--accent); font-size:16px;">✓</span>'; setTimeout(() => { copyBtn.innerHTML = '<img src="../assets/action-copy.png" style="width:18px; height:18px; display:block;">'; }, 1200); });
+      const copyBtn = mkBtn('action-copy.png', async () => { let copyText = note.text || ''; const ttl = (note.title || '').trim(); if (ttl && copyText.trimStart().startsWith(ttl)) { copyText = copyText.trimStart().slice(ttl.length).replace(/^\n+/, ''); } await window.sideDock.copyNote(copyText); copyBtn.innerHTML = '<span style="color:var(--accent); font-size:16px;">✓</span>'; setTimeout(() => { copyBtn.innerHTML = '<img src="../assets/action-copy.png" style="width:18px; height:18px; display:block;">'; }, 1200); });
       const editBtn = mkBtn('action-edit.png', () => {
         const titleInp = document.createElement('input'); titleInp.value = title; titleInp.style.cssText = 'width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-weight:700;';
         const ta = document.createElement('textarea'); ta.value = note.text; ta.style.cssText = 'width:100%; box-sizing:border-box; min-height:140px; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--text); outline:none; font-size:14px; font-family:inherit; resize:none; overflow:hidden;';
@@ -372,7 +401,7 @@
         cancelBtn.addEventListener('click', renderPanelNotes);
         saveRow.append(saveBtn, cancelBtn); btnRow.after(saveRow);
       });
-      const delBtn = mkBtn('action-delete.png', async () => { await window.sideDock.deleteNote(note.id); renderPanelNotes(); });
+      const delBtn = mkBtn('action-bin.png', async () => { if (!(await showDeleteConfirm())) return; lastDeleted = { type: 'note', data: note }; await window.sideDock.deleteNote(note.id); renderPanelNotes(); });
       btnRow.append(editBtn, delBtn, expandBtn, copyBtn);
       card.append(titleEl, btnRow, noteBody);
       listEl.appendChild(card);

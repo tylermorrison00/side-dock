@@ -397,6 +397,8 @@ ipcMain.handle('add-note', (_e, data) => {
   notes.unshift(item); saveNotes(notes); return notes;
 });
 ipcMain.handle('copy-note', (_e, text) => { try { clipboard.writeText(String(text || '')); } catch {} return true; });
+ipcMain.handle('restore-note', (_e, item) => { const notes = loadNotes(); if (!item || notes.some(x => x.id === item.id)) return notes; notes.unshift({ id: String(item.id), title: String(item.title || '').slice(0,200), text: String(item.text || '').slice(0,5000) }); saveNotes(notes); return notes; });
+ipcMain.handle('restore-todo', (_e, item) => { const todos = loadTodos(); if (!item || todos.some(x => x.id === item.id)) return todos; todos.push({ id: String(item.id), text: String(item.text || '').slice(0,200), done: !!item.done }); saveTodos(todos); return todos; });
 ipcMain.handle('delete-note', (_e, id) => {
   const notes = loadNotes().filter(x => x.id !== id);
   saveNotes(notes); return notes;
