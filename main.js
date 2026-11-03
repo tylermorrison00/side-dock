@@ -443,6 +443,27 @@ function applyExtraDim(lvl) {
   try { extraDimWin.setOpacity(extraDimLevel / 100); } catch {}
   try { if (!extraDimWin.isVisible()) extraDimWin.showInactive(); } catch {}
 }
+
+let warmWin = null;
+let warmLevel = 0;
+function warmPath() { return path.join(app.getPath('userData'), 'warm.json'); }
+function loadWarm() { try { const v = JSON.parse(fs.readFileSync(warmPath(), 'utf8')); return Math.max(0, Math.min(80, parseInt(v.level, 10) || 0)); } catch { return 0; } }
+function saveWarm(lvl) { try { fs.writeFileSync(warmPath(), JSON.stringify({ level: lvl })); } catch {} }
+function applyWarm(lvl) {
+  warmLevel = Math.max(0, Math.min(80, parseInt(lvl, 10) || 0));
+  saveWarm(warmLevel);
+  if (warmLevel <= 0) { try { if (warmWin) warmWin.close(); } catch {} warmWin = null; return; }
+  if (!warmWin) {
+    warmWin = new BrowserWindow({ fullscreen: true, frame: false, transparent: false, backgroundColor: '#ff8c00', alwaysOnTop: true, skipTaskbar: true, focusable: false, resizable: false, minimizable: false, maximizable: false, closable: true, show: false });
+    try { warmWin.setIgnoreMouseEvents(true, { forward: true }); } catch {}
+    try { warmWin.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+    warmWin.on('closed', () => { warmWin = null; });
+  }
+  try { warmWin.setOpacity(warmLevel / 100); } catch {}
+  try { if (!warmWin.isVisible()) warmWin.showInactive(); } catch {}
+}
+ipcMain.handle('get-warm', () => ({ level: loadWarm() }));
+ipcMain.handle('set-warm', (_e, lvl) => { applyWarm(lvl); return { level: warmLevel }; });
 ipcMain.handle('get-extra-dim', () => ({ level: loadExtraDim() }));
 ipcMain.handle('set-extra-dim', (_e, lvl) => { applyExtraDim(lvl); return { level: extraDimLevel }; });
 ipcMain.handle('get-brightness', async () => {
@@ -520,4 +541,4 @@ ipcMain.handle('do-update', async () => {
   }
 });
 
-app.whenReady().then(() => { setTimeout(() => { try { const lvl = loadExtraDim(); if (lvl > 0) applyExtraDim(lvl); } catch {} }, 1000); });
+app.whenReady().then(() => { setTimeout(() => { try { const lvl = loadExtraDim(); if (lvl > 0) applyExtraDim(lvl); const wl = loadWarm(); if (wl > 0) applyWarm(wl); } catch {} }, 1000); });
