@@ -11,12 +11,12 @@
   textarea::-webkit-scrollbar, input::-webkit-scrollbar { display: none; width: 0; height: 0; }
   textarea { scrollbar-width: none; -ms-overflow-style: none; }
   :root {
-    --bg: rgba(11, 18, 32, 0.85); --panel: rgba(19, 30, 51, 0.85); --panel2: rgba(26, 41, 71, 0.85); --line: #24365a;
+    --bg: rgb(11, 18, 32); --panel: rgb(19, 30, 51); --panel2: rgb(26, 41, 71); --line: #24365a;
     --text: #e8eefc; --muted: #8a9bb8; --green: #22c55e; --cyan: #00d4ff;
     --accent: #00d4ff;
   }
   body.light {
-    --bg: rgba(232, 238, 248, 0.85); --panel: rgba(255, 255, 255, 0.85); --panel2: rgba(219, 230, 245, 0.85); --line: #c3d2e8;
+    --bg: rgb(232, 238, 248); --panel: rgb(255, 255, 255); --panel2: rgb(219, 230, 245); --line: #c3d2e8;
     --text: #0f1a2e; --muted: #5a6b8a; --green: #16a34a; --cyan: #0099cc;
     --accent: #0099cc;
   }
@@ -249,7 +249,7 @@
       list.appendChild(b);
       const rb = document.createElement('button');
       rb.className = 'tool'; rb.dataset.name = tool.name; rb.style.position = 'relative';
-      rb.innerHTML = tool.logo ? `<img src="../assets/${tool.logo}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:0.85; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
+      rb.innerHTML = tool.logo ? `<img src="../assets/${tool.logo}" alt="${tool.name}" style="width:32px; height:32px; border-radius:8px; opacity:1; object-fit:contain;">` : `<span class="icon">${tool.icon || '◆'}</span>`;
       rb.addEventListener('click', async () => {
         if (panelOpen && currentTool && currentTool.id === tool.id) { await closePanel(); return; }
         await openPanel();
@@ -277,7 +277,7 @@
     document.getElementById('toolList').style.display = 'none';
     document.querySelector('.brand-name').textContent = tool.name;
     const logoEl = document.querySelector('.brand .logo');
-    logoEl.innerHTML = tool.logo ? `<img id="toolLogoImg" src="../assets/${tool.logo}" alt="${tool.name}" style="width:30px; height:30px; border-radius:9px; opacity:0.85; object-fit:contain; display:block;">` : `<span style="font-size:20px; display:grid; place-items:center; width:100%; height:100%;">${tool.icon || '◆'}</span>`;
+    logoEl.innerHTML = tool.logo ? `<img id="toolLogoImg" src="../assets/${tool.logo}" alt="${tool.name}" style="width:30px; height:30px; border-radius:9px; opacity:1; object-fit:contain; display:block;">` : `<span style="font-size:20px; display:grid; place-items:center; width:100%; height:100%;">${tool.icon || '◆'}</span>`;
     const tv = document.getElementById('toolView');
     tv.style.display = 'flex';
     if (tool.id === 'todo-list' || tool.target === 'todo') {
