@@ -5,11 +5,11 @@ $code = @"
 using System;
 using System.Runtime.InteropServices;
 public class Gamma {
-  [DllImport("user32.dll")] public static extern IntPtr GetDC(IntPtr hWnd);
-  [DllImport("user32.dll")] public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+  [DllImport("gdi32.dll", CharSet = CharSet.Auto)] public static extern IntPtr CreateDC(string lpszDriver, string lpszDevice, string lpszOutput, IntPtr lpInitData);
+  [DllImport("gdi32.dll")] public static extern bool DeleteDC(IntPtr hdc);
   [DllImport("gdi32.dll")] public static extern bool SetDeviceGammaRamp(IntPtr hDC, ushort[] ramp);
   public static bool SetWarm(double warm) {
-    IntPtr dc = GetDC(IntPtr.Zero);
+    IntPtr dc = CreateDC("DISPLAY", null, null, IntPtr.Zero);
     if (dc == IntPtr.Zero) return false;
     double greenF = 1.0 - 0.25 * warm;
     double blueF = 1.0 - 0.60 * warm;
@@ -20,7 +20,7 @@ public class Gamma {
       ramp[512 + i] = (ushort)Math.Min(65535, i * 257 * blueF);
     }
     bool ok = SetDeviceGammaRamp(dc, ramp);
-    ReleaseDC(IntPtr.Zero, dc);
+    DeleteDC(dc);
     return ok;
   }
 }
