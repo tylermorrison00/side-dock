@@ -19,5 +19,5 @@
     "pack": "electron-builder --win portable",
     "start": "electron ."
   },
-  "version": "2.15.15"
+  "version": "2.15.16"
 }
