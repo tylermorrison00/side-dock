@@ -43,6 +43,8 @@ contextBridge.exposeInMainWorld('sideDock', {
   setExtraDim: (level) => ipcRenderer.invoke('set-extra-dim', level),
   getWarm: () => ipcRenderer.invoke('get-warm'),
   setWarm: (level) => ipcRenderer.invoke('set-warm', level),
+  getNightLight: () => ipcRenderer.invoke('get-nightlight'),
+  toggleNightLight: () => ipcRenderer.invoke('toggle-nightlight'),
   openNightLight: () => ipcRenderer.invoke('open-nightlight'),
   editNote: (id, data) => ipcRenderer.invoke('edit-note', id, data)
 });

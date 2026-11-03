@@ -215,9 +215,7 @@
       <div style="font-size:14px; font-weight:700;">Extra Dim: <span id="panelExtraDimValue">0</span>%</div>
       <input id="panelExtraDimSlider" type="range" min="0" max="80" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Normal</span><span>Extra dark</span></div>
-      <div style="font-size:14px; font-weight:700; margin-top:8px;">Warm: <span id="panelWarmValue">0</span>%</div>
-      <input id="panelWarmSlider" type="range" min="0" max="100" value="0" style="width:100%; accent-color:var(--accent); cursor:pointer;">
-      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Cool</span><span>Warm</span></div>
+      <button class="btn" id="panelNightLightToggle" style="width:auto; padding:8px 16px; align-self:flex-start; margin-top:8px;">Night Light: Off</button>
 
     </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
@@ -349,7 +347,7 @@
       document.getElementById('panelHabitUI').style.display = 'none';
       document.getElementById('panelToolOpen').style.display = 'none';
       document.getElementById('panelBrightnessUI').style.display = 'flex';
-      (async () => { try { const ex = await window.sideDock.getExtraDim(); if (ex) { document.getElementById('panelExtraDimSlider').value = ex.level; document.getElementById('panelExtraDimValue').textContent = ex.level; } } catch {} try { const wm = await window.sideDock.getWarm(); if (wm) { document.getElementById('panelWarmSlider').value = wm.level; document.getElementById('panelWarmValue').textContent = wm.level; } } catch {} })();
+      (async () => { try { const ex = await window.sideDock.getExtraDim(); if (ex) { document.getElementById('panelExtraDimSlider').value = ex.level; document.getElementById('panelExtraDimValue').textContent = ex.level; } } catch {} })();
     } else {
       document.querySelector('#toolView .add').style.display = 'none';
       document.getElementById('panelTodoList').innerHTML = '';
@@ -458,9 +456,9 @@
   document.getElementById('panelAddHabitBtn').addEventListener('click', async () => { const inp = document.getElementById('panelHabitInput'); const v = inp.value.trim(); if (!v) return; await window.sideDock.addHabit(v); inp.value = ''; renderPanelHabits(); });
   document.getElementById('panelHabitInput').addEventListener('keydown', async (e) => { if (e.key === 'Enter') document.getElementById('panelAddHabitBtn').click(); });
   document.getElementById('panelExtraDimSlider').addEventListener('input', async (e) => { document.getElementById('panelExtraDimValue').textContent = e.target.value; await window.sideDock.setExtraDim(parseInt(e.target.value, 10)); });
-  let warmTimer = null;
-  document.getElementById('panelWarmSlider').addEventListener('input', (e) => { document.getElementById('panelWarmValue').textContent = e.target.value; clearTimeout(warmTimer); warmTimer = setTimeout(async () => { await window.sideDock.setWarm(parseInt(e.target.value, 10)); }, 300); });
-  document.getElementById('panelWarmSlider').addEventListener('change', async (e) => { clearTimeout(warmTimer); await window.sideDock.setWarm(parseInt(e.target.value, 10)); });
+  let nightLightOn = false;
+  const nlBtn = document.getElementById('panelNightLightToggle');
+  if (nlBtn) { nlBtn.addEventListener('click', async () => { nlBtn.disabled = true; nlBtn.textContent = 'Night Light: ...'; await window.sideDock.toggleNightLight(); nightLightOn = !nightLightOn; nlBtn.textContent = nightLightOn ? 'Night Light: On' : 'Night Light: Off'; nlBtn.disabled = false; }); }
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');
