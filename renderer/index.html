@@ -211,6 +211,12 @@
       </div>
       <div id="panelHabitList" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
+    <div id="panelBrightnessUI" style="display:none; flex-direction:column; gap:12px;">
+      <div style="font-size:14px; font-weight:700;">Master Brightness: <span id="panelBrightnessValue">--</span>%</div>
+      <input id="panelBrightnessSlider" type="range" min="0" max="100" value="100" style="width:100%; accent-color:var(--accent); cursor:pointer;">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);"><span>Dim</span><span>Bright</span></div>
+      <div id="panelBrightnessNote" style="font-size:12px; color:var(--muted); display:none;">Brightness not supported on this display.</div>
+    </div>
     <div id="panelToolOpen" style="display:none; flex-direction:column; gap:12px;">
       <div id="panelToolDesc" style="font-size:13px; color:var(--muted); word-break:break-word;"></div>
       <button class="btn primary" id="panelOpenToolBtn"><span>Open</span></button>
@@ -314,6 +320,7 @@
       document.querySelector('#toolView .add').style.display = 'flex';
       document.getElementById('panelNotesUI').style.display = 'none';
       document.getElementById('panelHabitUI').style.display = 'none';
+      document.getElementById('panelBrightnessUI').style.display = 'none';
       document.getElementById('panelToolOpen').style.display = 'none';
       renderPanelTodos();
     } else if (tool.id === 'notes' || tool.target === 'notes') {
@@ -321,6 +328,7 @@
       document.getElementById('panelTodoList').innerHTML = '';
       document.getElementById('panelToolOpen').style.display = 'none';
       document.getElementById('panelHabitUI').style.display = 'none';
+      document.getElementById('panelBrightnessUI').style.display = 'none';
       document.getElementById('panelNotesUI').style.display = 'flex';
       renderPanelNotes();
     } else if (tool.id === 'habit-tracker' || tool.target === 'habit') {
@@ -329,12 +337,22 @@
       document.getElementById('panelNotesUI').style.display = 'none';
       document.getElementById('panelToolOpen').style.display = 'none';
       document.getElementById('panelHabitUI').style.display = 'flex';
+      document.getElementById('panelBrightnessUI').style.display = 'none';
       renderPanelHabits();
+    } else if (tool.id === 'brightness-control' || tool.target === 'brightness') {
+      document.querySelector('#toolView .add').style.display = 'none';
+      document.getElementById('panelTodoList').innerHTML = '';
+      document.getElementById('panelNotesUI').style.display = 'none';
+      document.getElementById('panelHabitUI').style.display = 'none';
+      document.getElementById('panelToolOpen').style.display = 'none';
+      document.getElementById('panelBrightnessUI').style.display = 'flex';
+      (async () => { const res = await window.sideDock.getBrightness(); const slider = document.getElementById('panelBrightnessSlider'); const val = document.getElementById('panelBrightnessValue'); const note = document.getElementById('panelBrightnessNote'); if (res && res.ok && res.level !== null) { slider.value = res.level; val.textContent = res.level; note.style.display = 'none'; } else { val.textContent = '--'; note.style.display = 'block'; } })();
     } else {
       document.querySelector('#toolView .add').style.display = 'none';
       document.getElementById('panelTodoList').innerHTML = '';
       document.getElementById('panelNotesUI').style.display = 'none';
       document.getElementById('panelHabitUI').style.display = 'none';
+      document.getElementById('panelBrightnessUI').style.display = 'none';
       const po = document.getElementById('panelToolOpen');
       po.style.display = 'flex';
       document.getElementById('panelToolDesc').textContent = tool.target || '';
@@ -436,6 +454,8 @@
   }
   document.getElementById('panelAddHabitBtn').addEventListener('click', async () => { const inp = document.getElementById('panelHabitInput'); const v = inp.value.trim(); if (!v) return; await window.sideDock.addHabit(v); inp.value = ''; renderPanelHabits(); });
   document.getElementById('panelHabitInput').addEventListener('keydown', async (e) => { if (e.key === 'Enter') document.getElementById('panelAddHabitBtn').click(); });
+  document.getElementById('panelBrightnessSlider').addEventListener('input', (e) => { document.getElementById('panelBrightnessValue').textContent = e.target.value; });
+  document.getElementById('panelBrightnessSlider').addEventListener('change', async (e) => { await window.sideDock.setBrightness(parseInt(e.target.value, 10)); });
   async function renderPanelNotes() {
     const notes = await window.sideDock.getNotes();
     const listEl = document.getElementById('panelNotesList');

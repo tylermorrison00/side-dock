@@ -31,5 +31,16 @@
     "logoLight": "habit-tracker-logo.png",
     "iconOutline": "habit-tracker-logo.png",
     "iconAccent": "habit-tracker-logo.png"
+  },
+  {
+    "id": "brightness-control",
+    "name": "Brightness Control",
+    "icon": "",
+    "target": "brightness",
+    "kind": "app",
+    "logo": "brightness-logo.png",
+    "logoLight": "brightness-logo.png",
+    "iconOutline": "brightness-logo.png",
+    "iconAccent": "brightness-logo.png"
   }
 ]

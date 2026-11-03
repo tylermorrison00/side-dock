@@ -37,5 +37,7 @@ contextBridge.exposeInMainWorld('sideDock', {
   toggleHabit: (id) => ipcRenderer.invoke('toggle-habit', id),
   editHabit: (id, name) => ipcRenderer.invoke('edit-habit', id, name),
   restoreHabit: (item) => ipcRenderer.invoke('restore-habit', item),
+  getBrightness: () => ipcRenderer.invoke('get-brightness'),
+  setBrightness: (level) => ipcRenderer.invoke('set-brightness', level),
   editNote: (id, data) => ipcRenderer.invoke('edit-note', id, data)
 });

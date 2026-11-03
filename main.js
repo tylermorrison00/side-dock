@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, shell, screen, safeStorage, clipboard } = require('electron');
+const { execFile } = require('child_process');
 const { exec } = require('child_process');
 const fs = require('fs');
 const https = require('https');
@@ -422,6 +423,21 @@ ipcMain.handle('delete-habit', (_e, id) => { const h = loadHabits().filter(x => 
 ipcMain.handle('toggle-habit', (_e, id) => { const h = loadHabits().map(x => { if (x.id !== id) return x; const days = { ...(x.days || {}) }; const today = todayPKT(); if (days[today]) delete days[today]; else days[today] = true; return { ...x, days }; }); saveHabits(h); return h; });
 ipcMain.handle('edit-habit', (_e, id, name) => { const h = loadHabits().map(x => x.id === id ? { ...x, name: String(name || '').trim().slice(0,200) || x.name } : x); saveHabits(h); return h; });
 ipcMain.handle('restore-habit', (_e, item) => { const h = loadHabits(); if (!item || h.some(x => x.id === item.id)) return h; h.push({ id: String(item.id), name: String(item.name || ''), days: item.days || {} }); saveHabits(h); return h; });
+
+ipcMain.handle('get-brightness', async () => {
+  return new Promise((resolve) => {
+    execFile('powershell', ['-NoProfile', '-Command', "(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightness).CurrentBrightness"], (err, stdout) => {
+      const n = parseInt(String(stdout || '').trim(), 10);
+      resolve({ ok: !isNaN(n), level: isNaN(n) ? null : n });
+    });
+  });
+});
+ipcMain.handle('set-brightness', async (_e, level) => {
+  const lvl = Math.max(0, Math.min(100, parseInt(level, 10) || 0));
+  return new Promise((resolve) => {
+    execFile('powershell', ['-NoProfile', '-Command', `(Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, ${lvl})`], (err) => { resolve({ ok: !err, level: lvl }); });
+  });
+});
 ipcMain.handle('launch-tool', (_e, tool) => {
   if (!tool || !tool.target) return;
   if (tool.target === 'todo' || tool.id === 'todo-list') { openTodoWindow(); return; }
